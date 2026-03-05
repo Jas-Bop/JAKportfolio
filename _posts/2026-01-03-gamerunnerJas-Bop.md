@@ -26,7 +26,7 @@ Game Runner integrates your GameEngine framework for teaching game development. 
 - Main file: `_sass/open-coding/forms/game-runner.scss`
 - Uses runner-base mixin for consistency
 - Game output constrained to 400-600px height for education
-- Canvas automatically sized and centered
+- Canvas automatically sized and centeredca
 - Color-coded buttons: Green (Start), Yellow (Pause), Red (Stop)
 
 #### Game Output Area
