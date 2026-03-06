@@ -51,7 +51,7 @@ class GameLevelKirby {
         const npcData1 = {
             id: 'NPC',
             greeting: 'Hello!',
-            src: path + "/images/gamify/tux.png",
+            src: path + "/images/gamify/thumbs-up.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
             INIT_POSITION: { x: 500, y: 300 },
