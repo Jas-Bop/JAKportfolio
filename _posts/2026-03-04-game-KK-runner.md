@@ -3,7 +3,7 @@ layout: post
 codemirror: true
 title: Game Runner Examples
 description: Learn game development using the GameEngine framework in a contained educational environment. Build game levels, add characters, and create interactive experiences with live code editing and debugging controls.
-permalink: /rpg/gameKK
+permalink: /rpg/game
 
 ---
 
@@ -74,7 +74,9 @@ Run the basic game. Use WASD or arrow keys to move Chill Guy around the desert. 
 {% endcapture %}
 
 {% capture code1 %}
-
+// Import for GameRunner
+import GameControl from '/assets/js/GameEnginev1/essentials/GameControl.js';
+// Level Code
 import GameEnvBackground from '/assets/js/GameEnginev1/essentials/GameEnvBackground.js';
 import Player from '/assets/js/GameEnginev1/essentials/Player.js';
 import Npc from '/assets/js/GameEnginev1/essentials/Npc.js';
@@ -217,7 +219,17 @@ this.classes = [      { class: GameEnvBackground, data: bgData },
     }
 }
 
-export const gameLevelClasses = [GameLevelCustom];
+## Combine Game Levels: Connected levels via ESC key
+
+{% capture challenge2 %}
+Run the basic game. Use WASD or arrow keys to move Chill Guy around the desert. Walk up to R2D2 to trigger an interaction!
+{% endcapture %}
+
+{% capture code2 %}
+import GameControl from "/assets/js/GameEnginev1/essentials/GameControl.js";
+import GameLevelWater from "/assets/js/GameEnginev1/GameLevelWater.js";
+import GameLevelParallaxFish from "/assets/js/GameEnginev1/GameLevelParallaxFish.js";
+export const gameLevelClasses = [GameLevelWater, GameLevelParallaxFish];
 export { GameControl };
 {% endcapture %}
 
