@@ -38,7 +38,7 @@ The game renders in a constrained canvas for educational purposes:
 - Canvas max height: 580px
 - Black background with accent-colored border
 - Automatically centers the canvas
-- Scrollable if content exceeds container
+- Scrollable if co ntent exceeds container
 
 #### Controls
 
@@ -76,6 +76,7 @@ Run the basic game. Use WASD or arrow keys to move Chill Guy around the desert. 
 {% capture code1 %}
 
 import GameEnvBackground from '/assets/js/GameEnginev1/essentials/GameEnvBackground.js';
+import GameControl from '/assets/js/adventureGame/GameEnginev1/GameControl.js';
 import Player from '/assets/js/GameEnginev1/essentials/Player.js';
 import Npc from '/assets/js/GameEnginev1/essentials/Npc.js';
 import Barrier from '/assets/js/GameEnginev1/essentials/Barrier.js';
@@ -110,7 +111,7 @@ class GameLevelCustom {
             upLeft: { row: 2, start: 0, columns: 3, rotate: Math.PI/16 },
             upRight: { row: 3, start: 0, columns: 3, rotate: -Math.PI/16 },
             hitbox: { widthPercentage: 0, heightPercentage: 0 },
-            keypress: { up: 87, left: 65, down: 83, right: 68 }
+            keypress: { up: 87, left: 68, down: 87, right: 68 }
             };
 
         const npcData1 = {
