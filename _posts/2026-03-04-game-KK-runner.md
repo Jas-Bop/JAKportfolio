@@ -90,8 +90,8 @@ class GameLevelCustom {
 
         const bgData = {
             name: "custom_bg",
-            src: path + "/images/gamebuilder/bg/alien_planet.jpg",
-            pixels: { height: 772, width: 1134 }
+            src: path + "/images/gamebuilder/bg/grass_place.jpg",
+            pixels: { height: 360, width: 639 }
         };
 
         const playerData = {
