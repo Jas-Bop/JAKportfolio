@@ -23,7 +23,7 @@ class GameLevelAbcd {
 
         const bgData = {
             name: "custom_bg",
-            src: path + "/images/gamebuilder/bg/alien_planet.jpg",
+            src: path + "/images/gamify/bg/gameart.png",
             pixels: { height: 772, width: 1134 }
         };
 
