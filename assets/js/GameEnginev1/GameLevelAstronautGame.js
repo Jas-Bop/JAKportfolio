@@ -23,7 +23,7 @@ class GameLevelAstronautGame {
 
         const bgData = {
             name: "custom_bg",
-            src: path + "/images/gamebuilder/bg/alien_planet.jpg",
+            src: path + "/images/gamebuilder/bg/grass_place.jpg",
             pixels: { height: 772, width: 1134 }
         };
 
