@@ -130,7 +130,7 @@ class GameLevelCustom {
             downRight: { row: Math.min(1, 8 - 1), start: 0, columns: 3 },
             upLeft: { row: Math.min(2, 8 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
-            hitbox: { widthPercentage: 0.4, heightPercentage: 0.4},
+            hitbox: { widthPercentage: 0.3, heightPercentage: 0.3},
             dialogues: ['Hi, my name is Bob.'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
