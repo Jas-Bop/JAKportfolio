@@ -14,7 +14,6 @@ permalink: /gamify/AJgame
     import Core from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/Game.js";
     import GameControl from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/GameControl.js";
     import GameLevelKirby from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelKirby.js";
-    import GameLevelAstro from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevel.js";
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
     const gameLevelClasses = [GameLevelKirby];
