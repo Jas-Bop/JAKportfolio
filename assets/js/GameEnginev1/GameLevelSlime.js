@@ -71,7 +71,7 @@ class GameLevelAbcd {
             dialogues: ['Hi'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
-        };
+        }; 
         const dbarrier_1 = {
             id: 'dbarrier_1', x: 32, y: 28, width: 175, height: 110, visible: false,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },

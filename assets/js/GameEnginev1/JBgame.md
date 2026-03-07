@@ -7,7 +7,7 @@ permalink: /gamify/JBgame
 <div id="gameContainer">
     <div id="promptDropDown" class="promptDropDown" style="z-index: 9999"></div>
     <!-- GameEnv will create canvas dynamically -->
-</div>
+</div> 
 
 <script type="module">
     // Adnventure Game assets locations
