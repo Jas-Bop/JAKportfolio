@@ -73,7 +73,7 @@ class GameLevelPrologue {
 
         const npcData2 = {
             id: 'kirbyship',
-            greeting: '*Note please talk to other npc first* BOARDING PLANE AND PREPARING FOR LIFT OFF *Please exit to the next level(press escape)*',
+            greeting: '*Note please talk to other npc first, Right above me on the top of the screen(npc is kind of invisible with one spec flashing)* BOARDING PLANE AND PREPARING FOR LIFT OFF *Please exit to the next level(press escape)*',
             src: path + "/images/gamebuilder/sprites/pew.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
