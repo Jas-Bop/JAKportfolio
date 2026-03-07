@@ -74,7 +74,7 @@ class GameLevelSlime {
         }; 
          const npcData2 = {
             id: 'Mysterious dude',
-            greeting: 'Tsk, tsk, tsk. The great monster king now a lowly slime king. What a waste. Would you like to regain your true power?',
+            greeting: 'Tsk, tsk, tsk. The great Kirby astronaut now a lowly slime. What a waste. Would you like to regain your true power?',
             src: path + "/images/gamebuilder/sprites/ufos.png",
             SCALE_FACTOR: 7,
             ANIMATION_RATE: 50,
@@ -90,7 +90,7 @@ class GameLevelSlime {
             upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Tsk, tsk, tsk. The great monster king now a lowly slime king. What a waste. Would you like to regain your true power?'],
+            dialogues: ['Tsk, tsk, tsk. The great Kirby astronaut now a lowly slime. What a waste. Would you like to regain your true power?'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
