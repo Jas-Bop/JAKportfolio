@@ -72,6 +72,28 @@ class GameLevelSlime {
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         }; 
+         const npcData2 = {
+            id: 'Mysterious dude',
+            greeting: 'Tsk, tsk, tsk. The great monster king now a lowly slime king. What a waste. Would you like to regain your true power?',
+            src: path + "/images/gamebuilder/sprites/ufos.png",
+            SCALE_FACTOR: 7,
+            ANIMATION_RATE: 50,
+            INIT_POSITION: { x: 258, y: 322 },
+            pixels: { height: 500, width: 500 },
+            orientation: { rows: 4, columns: 3 },
+            down: { row: 0, start: 0, columns: 3 },
+            right: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
+            left: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
+            up: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
+            upRight: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
+            downRight: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
+            upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
+            downLeft: { row: 0, start: 0, columns: 3 },
+            hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
+            dialogues: ['Tsk, tsk, tsk. The great monster king now a lowly slime king. What a waste. Would you like to regain your true power?'],
+            reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
+            interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
+        };
         const dbarrier_1 = {
             id: 'dbarrier_1', x: 32, y: 28, width: 175, height: 110, visible: false,
             hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
@@ -80,6 +102,7 @@ class GameLevelSlime {
 this.classes = [      { class: GameEnvBackground, data: bgData },
       { class: Player, data: playerData },
       { class: Npc, data: npcData1 },
+      { class: Npc, data: npcData2 },
       { class: Barrier, data: dbarrier_1 }
 ];
 
