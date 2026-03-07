@@ -51,7 +51,7 @@ class GameLevelPrologue {
         const npcData1 = {
             id: 'evildude',
             greeting: 'Hah! I hereby strip you of your power. Good luck getting them back',
-            src: path + "/images/gamebuilder/sprites/tux.png",
+            src: path + "./images/gamebuilder/sprites/tux.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
             INIT_POSITION: { x: 468, y: 57 },
