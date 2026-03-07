@@ -83,13 +83,13 @@ class Npc extends Character {
     }
 
     handleKeyDown(event) {
-        if (event.key === 'e' || event.key === 'u') {
+        if (event.key === 'q' || event.key === 'u') {
             this.handleKeyInteract();
         }
     }
 
     handleKeyUp(event) {
-        if (event.key === 'e' || event.key === 'u') {
+        if (event.key === 'q' || event.key === 'u') {
             if (this.alertTimeout) {
                 clearTimeout(this.alertTimeout);
                 this.alertTimeout = null;
