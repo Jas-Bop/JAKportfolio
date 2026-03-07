@@ -17,10 +17,12 @@ permalink: /gamify/Teamsgame
     import GameLevelAstronautGame from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelAstronautGame.js";
     import GameLevelSlime from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelSlime.js";
     import GameLevelEpilogue from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelEpilogue.js";
+    import GameLevelPrologue from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelPrologue.js";
+
 
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-    const gameLevelClasses = [GameLevelPrologue,GameLevelKirby, GameLevelAstronautGame, GameLevelSlime, GameLevelEpilogue];
+    const gameLevelClasses = [GameLevelPrologue, GameLevelKirby, GameLevelAstronautGame, GameLevelSlime, GameLevelEpilogue];
 
     // Web Server Environment data
     const environment = {
