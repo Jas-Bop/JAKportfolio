@@ -116,7 +116,7 @@ permalink: /gamebuilder
                     <select id="player-select">
                         <option value="" selected disabled>Select sprite…</option>
                         <option value="chillguy">Chill Guy</option>
-                        <option value="tux">Tux</option>
+                        <option value="Puzzled Penguin">Tux</option>
                     </select>
                     <div class="upload-instructions" style="margin-top:6px;">
                         <button id="sprite-instructions-btn" class="btn btn-sm">Upload Instructions ▸</button>
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             skykingdom: { src: "/images/gamebuilder/bg/clouds.jpg", h: 720, w: 1280 }
         },
         sprites: {
-            tux: { src: "/images/gamify/tux.png", h:256, w:352, rows:8, cols:11 },
+            PuzzledPenguin: { src: "/images/gamify/tux.png", h:256, w:352, rows:8, cols:11 },
             chillguy: { src: "/images/gamify/chillguy.png", h:512, w:384, rows:4, cols:3 },
             r2d2: { src: "/images/gamify/r2_idle.png", h:223, w:505, rows:1, cols:3 }
         }
