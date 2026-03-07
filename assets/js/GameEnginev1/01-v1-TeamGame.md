@@ -19,7 +19,7 @@ permalink: /gamify/Teamsgame
 
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-    const gameLevelClasses = [GameLevelKirby, GameLevelAstronautGame, GameLevelSlime];
+    const gameLevelClasses = [GameLevelKirby, GameLevelAstronautGame, GameLevelSlime, GameLevelEpilogue];
 
     // Web Server Environment data
     const environment = {
