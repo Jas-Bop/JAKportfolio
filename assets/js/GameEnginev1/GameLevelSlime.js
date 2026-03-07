@@ -52,7 +52,7 @@ class GameLevelAbcd {
         
         const npcData1 = {
             id: 'ABC',
-            greeting: 'Hi',
+            greeting: 'Hi, would you like to go on an adventure',
             src: path + "/images/gamify/r2_idle.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
