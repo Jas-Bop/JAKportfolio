@@ -218,7 +218,7 @@ this.classes = [      { class: GameEnvBackground, data: bgData },
         /* BUILDER_ONLY_END */
     }
 }
-
+{% endcapture %}
 ## Combine Game Levels: Connected levels via ESC key
 
 {% capture challenge2 %}
