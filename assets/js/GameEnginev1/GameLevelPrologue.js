@@ -52,7 +52,7 @@ class GameLevelPrologue {
             id: 'God',
             greeting: 'I am God. I have come to you from the heavens. My true form is too much for you, so I must take the form of this red box. I have stripped you of your powers. good luck getting them back.',
             src: path + "/images/gamebuilder/sprites/tux.png",
-            SCALE_FACTOR: 3,
+            SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
             INIT_POSITION: { x: 468, y: 57 },
             pixels: { height: 256, width: 352 },
