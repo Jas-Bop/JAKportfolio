@@ -50,7 +50,7 @@ class GameLevelEpilogue {
 
         const npcData1 = {
             id: 'Jasan',
-            greeting: 'I hereby remove your freedome to move. Also, Jasan is sped',
+            greeting: 'I hereby remove your freedome to move. ',
             src: path + "/images/gamify/r2_idle.png",
             SCALE_FACTOR: 800,
             ANIMATION_RATE: 50,
