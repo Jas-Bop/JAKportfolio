@@ -49,10 +49,10 @@ class GameLevelPrologue {
             };
 
         const npcData1 = {
-            id: 'evildude',
-            greeting: 'Hah! I hereby strip you of your power. Good luck getting them back',
-            src: path + "./images/gamebuilder/sprites/tux.png",
-            SCALE_FACTOR: 8,
+            id: 'God',
+            greeting: 'I am God. I have come to you from the heavens. My true form is too much for you, so I must take the form of this red box. I have stripped you of your powers. good luck getting them back.',
+            src: path + "/images/gamebuilder/sprites/tux.png",
+            SCALE_FACTOR: 3,
             ANIMATION_RATE: 50,
             INIT_POSITION: { x: 468, y: 57 },
             pixels: { height: 256, width: 352 },
@@ -66,14 +66,14 @@ class GameLevelPrologue {
             upLeft: { row: Math.min(2, 8 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Hah! I hereby strip you of your power. Good luck getting them back'],
+            dialogues: ['I am God. I have come to you from the heavens. My true form is too much for you, so I must take the form of this red box. I have stripped you of your powers. good luck getting them back.'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
 
         const npcData2 = {
             id: 'kirbyship',
-            greeting: '*Note please talk to other npc first, Right above me on the top of the screen(npc is kind of invisible with one spec flashing)* BOARDING PLANE AND PREPARING FOR LIFT OFF *Please exit to the next level(press escape)*',
+            greeting: '*Note please talk to other npc first* BOARDING PLANE AND PREPARING FOR LIFT OFF *Please exit to the next level(press escape)*',
             src: path + "/images/gamebuilder/sprites/pew.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
