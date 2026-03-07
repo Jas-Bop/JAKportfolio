@@ -157,7 +157,7 @@ this.classes = [      { class: GameEnvBackground, data: bgData },
                     const summary = objs.map(o => ({ cls: o?.constructor?.name || 'Unknown', id: o?.canvas?.id || '', z: o?.canvas?.style?.zIndex || '' }));
                     if (window && window.parent) window.parent.postMessage({ type: 'rpg:objects', summary }, '*');
                 } catch (_) {}
-            }, 250);
+            }, 250);TheCoder203
         } catch (_) {}
         // Report environment metrics (like top offset) to builder
         try {

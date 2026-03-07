@@ -50,11 +50,11 @@ class GameLevelAstronautGame {
 
         const npcData1 = {
             id: 'Chill',
-            greeting: 'I\'m a chill guy',
+            greeting: 'Hi, there is an ocean that way. Also, you might possibly turn into a slime',
             src: path + "/images/gamify/chillguy.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
-            INIT_POSITION: { x: 500, y: 300 },
+            INIT_POSITION: { x: 616, y: 210 },
             pixels: { height: 512, width: 384 },
             orientation: { rows: 4, columns: 3 },
             down: { row: 0, start: 0, columns: 3 },
@@ -66,7 +66,7 @@ class GameLevelAstronautGame {
             upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['I\'m a chill guy'],
+            dialogues: ['Hi, there is an ocean that way. Also, you might possibly turn into a slime.'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
