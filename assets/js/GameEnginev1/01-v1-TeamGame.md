@@ -16,6 +16,7 @@ permalink: /gamify/Teamsgame
     import GameLevelKirby from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelKirby.js";
     import GameLevelAstronautGame from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelAstronautGame.js";
     import GameLevelSlime from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelSlime.js";
+    import GameLevelEpilogue from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelEpilogue.js";
 
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
