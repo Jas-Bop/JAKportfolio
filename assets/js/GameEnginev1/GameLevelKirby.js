@@ -52,7 +52,7 @@ class GameLevelKirby {
             id: 'Chil',
             greeting: 'Hi',
             src: path + "/images/spaceship.avif",
-            SCALE_FACTOR: 2,
+            SCALE_FACTOR: 4,
             ANIMATION_RATE: 1000000,
             INIT_POSITION: { x: 500, y: 300 },
             pixels: { height: 2000, width: 2000 },
