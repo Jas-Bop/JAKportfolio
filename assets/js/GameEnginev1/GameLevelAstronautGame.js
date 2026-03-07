@@ -66,7 +66,7 @@ class GameLevelAstronautGame {
             upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Hi, there is an ocean that way. Also, you might possibly turn into a slime.'],
+            dialogues: ['Hi, there is an ocean that way. Also, you might possibly turn into a slime.', "I will drain your power.", "Go over to that ocean. Nothing bad would ever happen..."],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
