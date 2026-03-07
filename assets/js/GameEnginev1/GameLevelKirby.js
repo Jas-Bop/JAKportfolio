@@ -23,7 +23,7 @@ class GameLevelKirby {
 
         const bgData = {
             name: "custom_bg",
-            src: path + "/images/gamebuilder/bg/alien_planet.jpg",
+            src: path + "/images/gamify/bg/space.jpeg",
             pixels: { height: 772, width: 1134 }
         };
 
@@ -49,24 +49,24 @@ class GameLevelKirby {
             };
 
         const npcData1 = {
-            id: 'NPC',
-            greeting: 'Hello!',
-            src: path + "/images/gamify/thumbs-up.png",
-            SCALE_FACTOR: 8,
-            ANIMATION_RATE: 50,
+            id: 'Chil',
+            greeting: 'Hi',
+            src: path + "/images/spaceship.avif",
+            SCALE_FACTOR: 2,
+            ANIMATION_RATE: 1000000,
             INIT_POSITION: { x: 500, y: 300 },
-            pixels: { height: 256, width: 352 },
-            orientation: { rows: 8, columns: 11 },
+            pixels: { height: 2000, width: 2000 },
+            orientation: { rows: 4, columns: 3 },
             down: { row: 0, start: 0, columns: 3 },
-            right: { row: Math.min(1, 8 - 1), start: 0, columns: 3 },
-            left: { row: Math.min(2, 8 - 1), start: 0, columns: 3 },
-            up: { row: Math.min(3, 8 - 1), start: 0, columns: 3 },
-            upRight: { row: Math.min(3, 8 - 1), start: 0, columns: 3 },
-            downRight: { row: Math.min(1, 8 - 1), start: 0, columns: 3 },
-            upLeft: { row: Math.min(2, 8 - 1), start: 0, columns: 3 },
+            right: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
+            left: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
+            up: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
+            upRight: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
+            downRight: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
+            upLeft: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
-            hitbox: { widthPercentage: 0.2, heightPercentage: 0.5 },
-            dialogues: ['Hello!'],
+            hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
+            dialogues: ['Hi, I am an alien'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
