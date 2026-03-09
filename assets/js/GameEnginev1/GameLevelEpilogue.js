@@ -66,7 +66,7 @@ class GameLevelEpilogue {
             upLeft: { row: Math.min(2, 1 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['I hereby remove your freedome to move. Also, Jasan is sped'],
+            dialogues: ['I hereby remove your freedome to move.'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
