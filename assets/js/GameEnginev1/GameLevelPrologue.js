@@ -50,7 +50,7 @@ class GameLevelPrologue {
 
         const npcData1 = {
             id: 'God',
-            greeting: 'I am God. I have come to you from the heavens. My true form is too much for you, so I must take the form of this red box. I have stripped you of your powers. good luck getting them back.',
+            greeting: 'I am God. I have come to you from the heavens. My true form is too much for you, so I must take this tiny form. I have stripped you of your powers. good luck getting them back.',
             src: path + "/images/gamebuilder/sprites/tux.png",
             SCALE_FACTOR: 8,
             ANIMATION_RATE: 50,
@@ -66,7 +66,7 @@ class GameLevelPrologue {
             upLeft: { row: Math.min(2, 8 - 1), start: 0, columns: 3 },
             downLeft: { row: 0, start: 0, columns: 3 },
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['I am God. I have come to you from the heavens. My true form is too much for you, so I must take the form of this red box. I have stripped you of your powers. good luck getting them back.'],
+            dialogues: ['I am God. I have come to you from the heavens. My true form is too much for you, so I must take this tiny form. I have stripped you of your powers. good luck getting them back.'],
             reaction: function() { if (this.dialogueSystem) { this.showReactionDialogue(); } else { console.log(this.greeting); } },
             interact: function() { if (this.dialogueSystem) { this.showRandomDialogue(); } }
         };
