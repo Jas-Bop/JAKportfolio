@@ -44,7 +44,14 @@ class Npc extends Character {
     }
 
     update() {
+        // Allow per-NPC movement logic defined in spriteData.update
+        if (typeof this.spriteData?.update === 'function') {
+            this.spriteData.update.call(this);
+        }
+
+        // Draw after any movement updates so the canvas is positioned correctly
         this.draw();
+
         // Check if player is still in collision - add null checks
         const players = this.gameEnv.gameObjects.filter(
             obj => obj && obj.state && obj.state.collisionEvents && obj.state.collisionEvents.includes(this.spriteData.id)
