@@ -1,6 +1,6 @@
 ---
 layout: opencs
-title: RPG Water Example 
+title: Our game 
 permalink: /gamify/TestGame
 ---
 
@@ -14,11 +14,12 @@ permalink: /gamify/TestGame
     import Core from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/Game.js";
     import GameControl from "{{site.baseurl}}/assets/js/GameEnginev1/essentials/GameControl.js";
     import GameLeveltest from "{{site.baseurl}}/assets/js/GameEnginev1/GameLeveltest.js";
+    import GameLevelfinal from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelfinal.js";
 
 
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-    const gameLevelClasses = [GameLeveltest];
+    const gameLevelClasses = [GameLeveltest, GameLevelfinal];
 
     // Web Server Environment data
     const environment = {
