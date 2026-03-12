@@ -117,6 +117,13 @@ class GameObject {
         const otherRight = otherRect.right - otherWidthReduction;
         const otherBottom = otherRect.bottom;
 
+        // If either object is currently ignoring collisions, skip
+        if (this.ignoreCollision || other.ignoreCollision ||
+            this.spriteData?.ignoreCollision || other.spriteData?.ignoreCollision) {
+            this.collisionData = { hit: false, touchPoints: null };
+            return;
+        }
+
         // Determine hit and touch points of hit
         const hit = (
             thisLeft < otherRight &&
