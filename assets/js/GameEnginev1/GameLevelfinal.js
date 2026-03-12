@@ -58,7 +58,7 @@ class GameLevelfinal {
             downLeft: { row: 0, start: 0, columns: 3 },
 
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['ah'],
+            dialogues: ['Nice moonwalk. It would be a shame to lose that walk of perfection but too bad. Die. Not all games have a happy ending!!!🔥🔥🔥'],
 
             reaction: function () {
                 if (this.dialogueSystem) {
