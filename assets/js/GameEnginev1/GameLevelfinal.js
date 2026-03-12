@@ -8,10 +8,11 @@ class GameLevelfinal {
         const path = gameEnv.path;
         const self = this;
 
-        this.deathTriggered = false;
-        this.killerActive = false;
-        this.killerElement = null;
-        this.deathOverlay = null;
+        this.gameEnv = gameEnv;
+        this.path = path;
+        this.killerStarted = false;
+        this.playerDead = false;
+        this.killerImg = null;
 
         const bgData = {
             name: "custom_bg",
@@ -22,7 +23,7 @@ class GameLevelfinal {
         const playerData = {
             id: 'playerData',
             src: path + "/images/gamebuilder/sprites/astro.png",
-            SCALE_FACTOR: 5,
+            SCALE_FACTOR: 8,
             STEP_FACTOR: 1000,
             ANIMATION_RATE: 50,
             INIT_POSITION: { x: 100, y: 300 },
@@ -81,12 +82,11 @@ class GameLevelfinal {
                     this.showRandomDialogue();
                 }
 
-                // Start kill sequence only once
-                if (!self.killerActive && !self.deathTriggered) {
-                    self.killerActive = true;
+                if (!self.killerStarted && !self.playerDead) {
+                    self.killerStarted = true;
                     setTimeout(() => {
-                        self.spawnRandomKiller(gameEnv, path);
-                    }, 700);
+                        self.spawnKiller();
+                    }, 1000);
                 }
             }
         };
@@ -191,169 +191,143 @@ class GameLevelfinal {
         /* BUILDER_ONLY_END */
     }
 
-    getPlayerCanvas(gameEnv) {
-        if (!Array.isArray(gameEnv?.gameObjects)) return null;
+    getPlayerObject() {
+        const objs = Array.isArray(this.gameEnv?.gameObjects) ? this.gameEnv.gameObjects : [];
 
-        for (const obj of gameEnv.gameObjects) {
-            if (obj?.canvas?.id === 'playerData') return obj.canvas;
-            if (obj instanceof Player && obj?.canvas) return obj.canvas;
+        for (const obj of objs) {
+            if (obj && obj.canvas && obj.canvas.id === 'playerData') {
+                return obj;
+            }
+        }
+
+        for (const obj of objs) {
+            if (obj && obj.constructor && obj.constructor.name === 'Player') {
+                return obj;
+            }
         }
 
         return null;
     }
 
-    getContainer(gameEnv) {
-        return gameEnv?.container || document.body;
-    }
+    spawnKiller() {
+        if (this.playerDead) return;
 
-    spawnRandomKiller(gameEnv, path) {
-        const container = this.getContainer(gameEnv);
-        const playerCanvas = this.getPlayerCanvas(gameEnv);
-
-        if (!container || !playerCanvas) return;
-
-        container.style.position = container.style.position || 'relative';
-
-        const killerSprites = [
-            path + "/images/gamify/chillguy.png",
-            path + "/images/gamebuilder/sprites/astro.png",
-            path + "/images/gamebuilder/sprites/astro.png"
-        ];
-
-        const randomSprite = killerSprites[Math.floor(Math.random() * killerSprites.length)];
-
-        const killer = document.createElement('img');
-        killer.src = randomSprite;
-        killer.alt = "killer";
-        killer.style.position = 'absolute';
-        killer.style.width = '80px';
-        killer.style.height = '80px';
-        killer.style.zIndex = '9999';
-        killer.style.pointerEvents = 'none';
-        killer.style.transition = 'transform 0.1s linear';
-
-        const containerRect = container.getBoundingClientRect();
-        const spawnSide = Math.floor(Math.random() * 4);
-
-        let x = 0;
-        let y = 0;
-
-        if (spawnSide === 0) {
-            x = -90; // left
-            y = Math.random() * Math.max(50, containerRect.height - 90);
-        } else if (spawnSide === 1) {
-            x = containerRect.width + 10; // right
-            y = Math.random() * Math.max(50, containerRect.height - 90);
-        } else if (spawnSide === 2) {
-            x = Math.random() * Math.max(50, containerRect.width - 90);
-            y = -90; // top
-        } else {
-            x = Math.random() * Math.max(50, containerRect.width - 90);
-            y = containerRect.height + 10; // bottom
+        const playerObj = this.getPlayerObject();
+        if (!playerObj || !playerObj.canvas) {
+            console.log("Killer could not spawn: player not found.");
+            return;
         }
 
-        killer.style.left = `${x}px`;
-        killer.style.top = `${y}px`;
+        const killerChoices = [
+            this.path + "/images/gamebuilder/sprites/meteorforgame.jpg"
+        ];
 
-        container.appendChild(killer);
-        this.killerElement = killer;
+        const killerSrc = killerChoices[Math.floor(Math.random() * killerChoices.length)];
 
-        const speed = 5;
+        const killer = document.createElement("img");
+        killer.src = killerSrc;
+        killer.style.position = "fixed";
+        killer.style.width = "70px";
+        killer.style.height = "70px";
+        killer.style.maxWidth = "70px";
+        killer.style.maxHeight = "70px";
+        killer.style.left = "0px";
+        killer.style.top = "0px";
+        killer.style.zIndex = "9999";
+        killer.style.pointerEvents = "none";
+        killer.style.objectFit = "contain";
 
-        const moveKiller = () => {
-            if (this.deathTriggered || !this.killerElement) return;
+        document.body.appendChild(killer);
+        this.killerImg = killer;
 
-            const playerRect = playerCanvas.getBoundingClientRect();
-            const containerNow = container.getBoundingClientRect();
+        let killerX;
+        let killerY;
 
-            const targetX =
-                playerRect.left - containerNow.left + (playerRect.width / 2) - 40;
-            const targetY =
-                playerRect.top - containerNow.top + (playerRect.height / 2) - 40;
+        const side = Math.floor(Math.random() * 4);
 
-            const dx = targetX - x;
-            const dy = targetY - y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        if (side === 0) {
+            killerX = -80;
+            killerY = Math.random() * (window.innerHeight - 80);
+        } else if (side === 1) {
+            killerX = window.innerWidth + 10;
+            killerY = Math.random() * (window.innerHeight - 80);
+        } else if (side === 2) {
+            killerX = Math.random() * (window.innerWidth - 80);
+            killerY = -80;
+        } else {
+            killerX = Math.random() * (window.innerWidth - 80);
+            killerY = window.innerHeight + 10;
+        }
 
-            if (distance < 25) {
-                this.showDeathMessage(gameEnv);
+        killer.style.left = killerX + "px";
+        killer.style.top = killerY + "px";
+
+        const speed = 10;
+
+        const chase = () => {
+            if (this.playerDead) return;
+            if (!playerObj.canvas || !document.body.contains(killer)) return;
+
+            const playerRect = playerObj.canvas.getBoundingClientRect();
+            const playerX = playerRect.left + (playerRect.width / 2);
+            const playerY = playerRect.top + (playerRect.height / 2);
+
+            const dx = playerX - killerX;
+            const dy = playerY - killerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 35) {
+                this.killPlayer();
                 return;
             }
 
-            if (distance > 0) {
-                x += (dx / distance) * speed;
-                y += (dy / distance) * speed;
+            if (dist > 0) {
+                killerX += (dx / dist) * speed;
+                killerY += (dy / dist) * speed;
             }
 
-            killer.style.left = `${x}px`;
-            killer.style.top = `${y}px`;
+            killer.style.left = killerX + "px";
+            killer.style.top = killerY + "px";
+            killer.style.transform = dx < 0 ? "scaleX(-1)" : "scaleX(1)";
 
-            if (dx < 0) {
-                killer.style.transform = 'scaleX(-1)';
-            } else {
-                killer.style.transform = 'scaleX(1)';
-            }
-
-            requestAnimationFrame(moveKiller);
+            requestAnimationFrame(chase);
         };
 
-        requestAnimationFrame(moveKiller);
+        requestAnimationFrame(chase);
     }
 
-    showDeathMessage(gameEnv) {
-        if (this.deathTriggered) return;
-        this.deathTriggered = true;
+    killPlayer() {
+        if (this.playerDead) return;
+        this.playerDead = true;
 
-        const container = this.getContainer(gameEnv);
-
-        if (this.killerElement) {
-            this.killerElement.style.transform += ' scale(1.2)';
+        if (this.killerImg) {
+            this.killerImg.remove();
+            this.killerImg = null;
         }
 
-        const overlay = document.createElement('div');
-        overlay.style.position = 'absolute';
-        overlay.style.left = '0';
-        overlay.style.top = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.background = 'rgba(0, 0, 0, 0.72)';
-        overlay.style.display = 'flex';
-        overlay.style.flexDirection = 'column';
-        overlay.style.alignItems = 'center';
-        overlay.style.justifyContent = 'center';
-        overlay.style.zIndex = '10000';
-        overlay.style.color = 'white';
-        overlay.style.fontFamily = 'monospace';
-        overlay.style.textAlign = 'center';
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100vw";
+        overlay.style.height = "100vh";
+        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.75)";
+        overlay.style.zIndex = "10000";
+        overlay.style.display = "flex";
+        overlay.style.flexDirection = "column";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.color = "white";
+        overlay.style.fontFamily = "monospace";
+        overlay.style.textAlign = "center";
+        overlay.style.pointerEvents = "none";
 
         overlay.innerHTML = `
-            <div style="font-size: 56px; font-weight: bold; color: red; margin-bottom: 12px;">
-                YOU DIED
-            </div>
-            <div style="font-size: 22px; max-width: 80%;">
-                A random sprite appeared and ended your journey.
-            </div>
+            <div style="font-size: 56px; color: red; font-weight: bold;">YOU DIED!!! BOZO🔥</div>
+            <div style="font-size: 20px; margin-top: 12px;">A homing missile has killed you.</div>
         `;
 
-        container.appendChild(overlay);
-        this.deathOverlay = overlay;
-
-        // Optional: stop movement by blocking keys after death
-        if (!window.__deathKeyBlockerAdded) {
-            window.__deathKeyBlockerAdded = true;
-            document.addEventListener(
-                'keydown',
-                function (e) {
-                    if (document.querySelector('[data-death-screen="true"]')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                },
-                true
-            );
-        }
-
-        overlay.setAttribute('data-death-screen', 'true');
+        document.body.appendChild(overlay);
     }
 }
 
