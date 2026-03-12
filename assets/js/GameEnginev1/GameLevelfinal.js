@@ -6,6 +6,12 @@ import Barrier from './essentials/Barrier.js';
 class GameLevelfinal {
     constructor(gameEnv) {
         const path = gameEnv.path;
+        const self = this;
+
+        this.deathTriggered = false;
+        this.killerActive = false;
+        this.killerElement = null;
+        this.deathOverlay = null;
 
         const bgData = {
             name: "custom_bg",
@@ -58,7 +64,9 @@ class GameLevelfinal {
             downLeft: { row: 0, start: 0, columns: 3 },
 
             hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-            dialogues: ['Nice moonwalk. It would be a shame to lose that walk of perfection but too bad. Die. Not all games have a happy ending!!!🔥🔥🔥'],
+            dialogues: [
+                'Nice moonwalk. It would be a shame to lose that walk of perfection but too bad. Die. Not all games have a happy ending!!!🔥🔥🔥'
+            ],
 
             reaction: function () {
                 if (this.dialogueSystem) {
@@ -71,6 +79,14 @@ class GameLevelfinal {
             interact: function () {
                 if (this.dialogueSystem) {
                     this.showRandomDialogue();
+                }
+
+                // Start kill sequence only once
+                if (!self.killerActive && !self.deathTriggered) {
+                    self.killerActive = true;
+                    setTimeout(() => {
+                        self.spawnRandomKiller(gameEnv, path);
+                    }, 700);
                 }
             }
         };
@@ -173,6 +189,171 @@ class GameLevelfinal {
             });
         } catch (_) {}
         /* BUILDER_ONLY_END */
+    }
+
+    getPlayerCanvas(gameEnv) {
+        if (!Array.isArray(gameEnv?.gameObjects)) return null;
+
+        for (const obj of gameEnv.gameObjects) {
+            if (obj?.canvas?.id === 'playerData') return obj.canvas;
+            if (obj instanceof Player && obj?.canvas) return obj.canvas;
+        }
+
+        return null;
+    }
+
+    getContainer(gameEnv) {
+        return gameEnv?.container || document.body;
+    }
+
+    spawnRandomKiller(gameEnv, path) {
+        const container = this.getContainer(gameEnv);
+        const playerCanvas = this.getPlayerCanvas(gameEnv);
+
+        if (!container || !playerCanvas) return;
+
+        container.style.position = container.style.position || 'relative';
+
+        const killerSprites = [
+            path + "/images/gamify/chillguy.png",
+            path + "/images/gamebuilder/sprites/astro.png",
+            path + "/images/gamebuilder/sprites/astro.png"
+        ];
+
+        const randomSprite = killerSprites[Math.floor(Math.random() * killerSprites.length)];
+
+        const killer = document.createElement('img');
+        killer.src = randomSprite;
+        killer.alt = "killer";
+        killer.style.position = 'absolute';
+        killer.style.width = '80px';
+        killer.style.height = '80px';
+        killer.style.zIndex = '9999';
+        killer.style.pointerEvents = 'none';
+        killer.style.transition = 'transform 0.1s linear';
+
+        const containerRect = container.getBoundingClientRect();
+        const spawnSide = Math.floor(Math.random() * 4);
+
+        let x = 0;
+        let y = 0;
+
+        if (spawnSide === 0) {
+            x = -90; // left
+            y = Math.random() * Math.max(50, containerRect.height - 90);
+        } else if (spawnSide === 1) {
+            x = containerRect.width + 10; // right
+            y = Math.random() * Math.max(50, containerRect.height - 90);
+        } else if (spawnSide === 2) {
+            x = Math.random() * Math.max(50, containerRect.width - 90);
+            y = -90; // top
+        } else {
+            x = Math.random() * Math.max(50, containerRect.width - 90);
+            y = containerRect.height + 10; // bottom
+        }
+
+        killer.style.left = `${x}px`;
+        killer.style.top = `${y}px`;
+
+        container.appendChild(killer);
+        this.killerElement = killer;
+
+        const speed = 5;
+
+        const moveKiller = () => {
+            if (this.deathTriggered || !this.killerElement) return;
+
+            const playerRect = playerCanvas.getBoundingClientRect();
+            const containerNow = container.getBoundingClientRect();
+
+            const targetX =
+                playerRect.left - containerNow.left + (playerRect.width / 2) - 40;
+            const targetY =
+                playerRect.top - containerNow.top + (playerRect.height / 2) - 40;
+
+            const dx = targetX - x;
+            const dy = targetY - y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 25) {
+                this.showDeathMessage(gameEnv);
+                return;
+            }
+
+            if (distance > 0) {
+                x += (dx / distance) * speed;
+                y += (dy / distance) * speed;
+            }
+
+            killer.style.left = `${x}px`;
+            killer.style.top = `${y}px`;
+
+            if (dx < 0) {
+                killer.style.transform = 'scaleX(-1)';
+            } else {
+                killer.style.transform = 'scaleX(1)';
+            }
+
+            requestAnimationFrame(moveKiller);
+        };
+
+        requestAnimationFrame(moveKiller);
+    }
+
+    showDeathMessage(gameEnv) {
+        if (this.deathTriggered) return;
+        this.deathTriggered = true;
+
+        const container = this.getContainer(gameEnv);
+
+        if (this.killerElement) {
+            this.killerElement.style.transform += ' scale(1.2)';
+        }
+
+        const overlay = document.createElement('div');
+        overlay.style.position = 'absolute';
+        overlay.style.left = '0';
+        overlay.style.top = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.background = 'rgba(0, 0, 0, 0.72)';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '10000';
+        overlay.style.color = 'white';
+        overlay.style.fontFamily = 'monospace';
+        overlay.style.textAlign = 'center';
+
+        overlay.innerHTML = `
+            <div style="font-size: 56px; font-weight: bold; color: red; margin-bottom: 12px;">
+                YOU DIED
+            </div>
+            <div style="font-size: 22px; max-width: 80%;">
+                A random sprite appeared and ended your journey.
+            </div>
+        `;
+
+        container.appendChild(overlay);
+        this.deathOverlay = overlay;
+
+        // Optional: stop movement by blocking keys after death
+        if (!window.__deathKeyBlockerAdded) {
+            window.__deathKeyBlockerAdded = true;
+            document.addEventListener(
+                'keydown',
+                function (e) {
+                    if (document.querySelector('[data-death-screen="true"]')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                },
+                true
+            );
+        }
+
+        overlay.setAttribute('data-death-screen', 'true');
     }
 }
 
