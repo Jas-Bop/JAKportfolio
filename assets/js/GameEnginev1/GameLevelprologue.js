@@ -15,7 +15,7 @@ import Player from './essentials/Player.js';
 import Npc from './essentials/Npc.js';
 import Barrier from './essentials/Barrier.js';
 
-class GameLevelprologue {
+class GameLevelPrologue {
     constructor(gameEnv) {
         const path = gameEnv.path;
         const width = gameEnv.innerWidth;
