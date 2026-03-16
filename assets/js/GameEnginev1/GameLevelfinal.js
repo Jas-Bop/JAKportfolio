@@ -321,10 +321,10 @@ class GameLevelfinal {
         overlay.style.color = "white";
         overlay.style.fontFamily = "monospace";
         overlay.style.textAlign = "center";
-        overlay.style.pointerEvents = "none";
+        overlay.style.pointerEvents = "none"; 
 
         overlay.innerHTML = `
-            <div style="font-size: 56px; color: red; font-weight: bold;">YOU DIED!!! BOZO🔥</div>
+            <div style="font-size: 56px; color: red; font-weight: bold;">YOU DIED!!!🔥</div>
             <div style="font-size: 20px; margin-top: 12px;">A homing missile has killed you.</div>
         `;
 
