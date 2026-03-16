@@ -117,9 +117,11 @@ class GameObject {
         const otherRight = otherRect.right - otherWidthReduction;
         const otherBottom = otherRect.bottom;
 
-        // If either object is currently ignoring collisions, skip
+        // If either object is currently ignoring collisions or invulnerable, skip
         if (this.ignoreCollision || other.ignoreCollision ||
-            this.spriteData?.ignoreCollision || other.spriteData?.ignoreCollision) {
+            this.spriteData?.ignoreCollision || other.spriteData?.ignoreCollision ||
+            this.invulnerable === true || other.invulnerable === true ||
+            this.spriteData?.invulnerable === true || other.spriteData?.invulnerable === true) {
             this.collisionData = { hit: false, touchPoints: null };
             return;
         }

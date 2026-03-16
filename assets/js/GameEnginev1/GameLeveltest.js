@@ -8,7 +8,6 @@ class GameLeveltest {
     const width = gameEnv.innerWidth;
     const height = gameEnv.innerHeight;
 
-    // Use a simple background image
     const backgroundData = {
       name: "custom_bg",
       src: path + "/images/gamify/bg/space.jpeg",
@@ -17,262 +16,275 @@ class GameLeveltest {
 
     const spriteSrc = path + '/images/gamebuilder/sprites/pew.png';
     const alienSpriteSrc = path + '/images/gamebuilder/sprites/ufos.png';
+    const meteorSpriteSrc = path + '/images/gamebuilder/sprites/meteorforgame.jpg';
+
+    const _meteorImg = new Image();
+    _meteorImg.src = meteorSpriteSrc;
 
     const spawnY = (avoidY = null, avoidRadius = 80) => {
-      // Keep meteors within the visible vertical range
-      const padding = 50;
-      let y;
-      let attempts = 0;
-
+      const paddingTop = 80;
+      const paddingBottom = 150;
+      const usableHeight = height - paddingTop - paddingBottom;
+      let y, attempts = 0;
       do {
-        y = Math.floor(Math.random() * (height - padding * 2)) + padding;
-        attempts += 1;
+        y = Math.floor(Math.random() * usableHeight) + paddingTop;
+        attempts++;
       } while (avoidY !== null && Math.abs(y - avoidY) < avoidRadius && attempts < 10);
-
       return y;
     };
 
-    let meteorCounter = 0;
-    let _respawnInProgress = false;
-    let _survivalTimeout = null;
     let _survivedMessageShown = false;
+    let _survivalInterval = null;
+    let _survivalRemaining = 0;
+    let _survivalTimeout = null;
+    let _respawnInProgress = false;
 
-    const resetSurvivalTimer = () => {
-      if (_survivedMessageShown) return;
-      if (_survivalTimeout) {
-        clearTimeout(_survivalTimeout);
-      }
-      _survivalTimeout = setTimeout(() => {
-        // Show the ‘You have done well…’ message once
-        if (_survivedMessageShown) return;
-        _survivedMessageShown = true;
+    const meteorPool = [];
+    const POOL_SIZE = 5;
 
-        const message = document.createElement('div');
-        Object.assign(message.style, {
+    // ── Timer UI ──────────────────────────────────────────────────────────────
+    const ensureTimerUI = () => {
+      let el = document.getElementById('meteor-timer');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'meteor-timer';
+        document.body.appendChild(el);
+        Object.assign(el.style, {
           position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          color: '#00FF00',
-          padding: '25px',
-          borderRadius: '12px',
+          padding: '8px 12px',
+          background: 'rgba(0,0,0,0.7)',
+          color: '#fff',
           fontFamily: "'Press Start 2P', sans-serif",
-          fontSize: '18px',
-          textAlign: 'center',
-          zIndex: '99999',
-          border: '3px solid #00FF00',
-          boxShadow: '0 0 20px rgba(0, 255, 0, 0.5)',
-          width: '360px'
+          fontSize: '14px',
+          border: '2px solid #00FF00',
+          borderRadius: '6px',
+          zIndex: 100000,
         });
-        message.innerHTML = `
-          <div style="margin-bottom: 15px; font-size: 22px;">✅ You have done well</div>
-          <div style="font-size: 16px;">You may pass.</div>
-        `;
-        document.body.appendChild(message);
-
-        setTimeout(() => {
-          if (message.parentNode) {
-            message.parentNode.removeChild(message);
-          }
-        }, 8000);
-      }, 60000);
+        el.style.top = '160px';  // below the navbar
+        el.style.right = '12px'; // flush with right edge of viewport
+      }
+      return el;
     };
 
-    const clearMeteorsExceptBase = () => {
-      // Keep one meteor as the “base” meteor and remove the rest.
-      const baseMeteor = gameEnv.gameObjects.find(obj => obj.spriteData?.isMeteor && obj.spriteData?.isBaseMeteor);
-      gameEnv.gameObjects.slice().forEach(obj => {
-        if (obj.spriteData?.isMeteor && !obj.spriteData?.isBaseMeteor) {
-          if (typeof obj.destroy === 'function') obj.destroy();
-        }
-      });
+    const removeTimerUI = () => {
+      const el = document.getElementById('meteor-timer');
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    };
 
-      if (baseMeteor) {
-        baseMeteor.position.x = width + 200;
-        baseMeteor.position.y = spawnY();
-        if (baseMeteor.spriteData) {
-          baseMeteor.spriteData.direction = -1;
-        }
+    const clearSurvivalTimer = () => {
+      if (_survivalInterval) { clearInterval(_survivalInterval); _survivalInterval = null; }
+      if (_survivalTimeout)  { clearTimeout(_survivalTimeout);  _survivalTimeout  = null; }
+      _survivalRemaining = 0;
+      _survivedMessageShown = false;
+      removeTimerUI();
+      const player = gameEnv.gameObjects.find(obj => obj instanceof Player);
+      if (player) {
+        player.invulnerable = false;
+        if (player.spriteData) player.spriteData.invulnerable = false;
       }
     };
 
-    const createMeteorData = (startX, startY, isBase = false) => {
-      meteorCounter += 1;
-      return {
-        id: `meteor-${meteorCounter}`,
-        greeting: 'I am a meteor.',
-        src: spriteSrc,
-        SCALE_FACTOR: 16,
-        ANIMATION_RATE: 50,
-        INIT_POSITION: { x: startX, y: startY },
-        pixels: { height: 160, width: 160 },
-        orientation: { rows: 4, columns: 4 },
-        down: { row: 0, start: 0, columns: 3 },
-        right: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
-        left: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
-        up: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
-        hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-        isMeteor: true,
-        isBaseMeteor: isBase,
-        ignoreCollision: true,
-        collisionDelay: 30,
-        dialogues: ['I am a test meteor.'],
-        reaction: () => {
-          if (_respawnInProgress) return;
+    const resetSurvivalTimer = (seconds = 60) => {
+      if (_survivalInterval) { clearInterval(_survivalInterval); _survivalInterval = null; }
+      _survivedMessageShown = false;
+      _survivalRemaining = seconds;
 
-          const player = gameEnv.gameObjects.find(obj => obj instanceof Player);
-          if (!player) return;
+      const player = gameEnv.gameObjects.find(obj => obj instanceof Player);
+      if (player) {
+        player.invulnerable = false;
+        if (player.spriteData) player.spriteData.invulnerable = false;
+      }
 
-          _respawnInProgress = true;
+      const timerEl = ensureTimerUI();
+      timerEl.textContent = `Survive: ${_survivalRemaining}s`;
 
-          clearMeteorsExceptBase();
-
-          const deathMessage = document.createElement('div');
-          Object.assign(deathMessage.style, {
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: '#FF0000',
-            padding: '25px',
-            borderRadius: '12px',
-            fontFamily: "'Press Start 2P', sans-serif",
-            fontSize: '18px',
-            textAlign: 'center',
-            zIndex: '99999',
-            border: '3px solid #FF0000',
-            boxShadow: '0 0 20px rgba(255, 0, 0, 0.5)',
-            width: '340px'
-          });
-          deathMessage.innerHTML = `
-            <div style="margin-bottom: 15px; font-size: 24px;">☠️ YOU DIED ☠️</div>
-            <div style="margin-bottom: 10px;">The meteor hit you!</div>
-            <div style="font-size: 14px;">Respawning in 2 seconds...</div>
-          `;
-          document.body.appendChild(deathMessage);
-
-          if (_survivalTimeout) {
-            clearTimeout(_survivalTimeout);
-            _survivalTimeout = null;
-          }
-
-          setTimeout(() => {
-            if (deathMessage.parentNode) {
-              deathMessage.parentNode.removeChild(deathMessage);
-            }
-
-            if (player.position) {
-              player.position.x = _respawnPosition.x;
-              player.position.y = _respawnPosition.y;
-            }
-            if (player.velocity) {
-              player.velocity.x = 0;
-              player.velocity.y = 0;
-            }
-            if (player.pressedKeys) {
-              player.pressedKeys = {};
-            }
-
-            _respawnInProgress = false;
-
-            // Restart the survival timer now that player is alive again
-            resetSurvivalTimer();
-          }, 2000);
-        },
-        interact: function() {
-          if (this.dialogueSystem) {
-            this.showRandomDialogue();
-          }
-        },
-        speed: 10,
-        direction: -1,
-        update: function() {
-          // Initialize collision grace settings (once)
-          if (this.collisionDelay === undefined) {
-            this.collisionDelay = this.collisionDelay ?? this.spriteData?.collisionDelay ?? 30;
-            this.ignoreCollision = this.ignoreCollision ?? this.spriteData?.ignoreCollision ?? true;
-          }
-
-          // Reduce collision grace timer; this prevents instant death on spawn
-          if (this.collisionDelay > 0) {
-            this.collisionDelay -= 1;
-            if (this.collisionDelay === 0) {
-              this.ignoreCollision = false;
-              if (this.spriteData) {
-                this.spriteData.ignoreCollision = false;
+      _survivalInterval = setInterval(() => {
+        _survivalRemaining -= 1;
+        if (_survivalRemaining <= 0) {
+          clearInterval(_survivalInterval); _survivalInterval = null;
+          timerEl.textContent = 'Passed';
+          if (player) { player.invulnerable = true; if (player.spriteData) player.spriteData.invulnerable = true; }
+          if (!_survivedMessageShown) {
+            _survivedMessageShown = true;
+            const msg = document.createElement('div');
+            Object.assign(msg.style, {
+              position: 'fixed', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'rgba(0,0,0,0.85)', color: '#00FF00',
+              padding: '25px', borderRadius: '12px',
+              fontFamily: "'Press Start 2P', sans-serif", fontSize: '18px',
+              textAlign: 'center', zIndex: '99999',
+              border: '3px solid #00FF00', boxShadow: '0 0 20px rgba(0,255,0,0.5)',
+              width: '360px'
+            });
+            msg.innerHTML = `
+              <div style="margin-bottom:15px;font-size:22px;">✅ You have done well</div>
+              <div style="font-size:16px;">You may pass.</div>`;
+            document.body.appendChild(msg);
+            // Transition to next level after showing the message
+            setTimeout(() => {
+              if (msg.parentNode) msg.parentNode.removeChild(msg);
+              if (gameEnv?.gameControl?.currentLevel) {
+                gameEnv.gameControl.currentLevel.continue = false;
               }
-            }
+            }, 3000);
           }
-
-          const direction = this.spriteData?.direction || -1;
-          const speed = this.spriteData?.speed || 2;
-          const width = this.spriteData?.pixels?.width || 0;
-
-          this.position.x += direction * speed;
-
-          // When the meteor reaches the left boundary, teleport it to the right edge immediately
-          // (prevents it from disappearing completely off-screen)
-          if (this.position.x < 0) {
-            this.position.x = this.gameEnv.innerWidth + width;
-            this.position.y = spawnY();
-            this.spriteData.direction = -1;
-          }
+          setTimeout(removeTimerUI, 3000);
+          return;
         }
-      };
+        timerEl.textContent = `Survive: ${_survivalRemaining}s`;
+      }, 1000);
     };
 
-    const spawnMeteors = (count = 2) => {
+    // ── Helpers to show/hide meteor canvas ────────────────────────────────────
+    const hideMeteor = (m) => {
+      if (m.canvas) m.canvas.style.display = 'none';
+      m.ignoreCollision = true;
+      if (m.spriteData) {
+        m.spriteData.meteorActive = false;
+        m.spriteData.ignoreCollision = true;
+      }
+    };
+
+    const showMeteor = (m, x, y) => {
+      m.position.x = x;
+      m.position.y = y;
+      m.collisionDelay = 30;
+      m.ignoreCollision = true;
+      if (m.spriteData) {
+        m.spriteData.meteorActive = true;
+        m.spriteData.ignoreCollision = true;
+        m.spriteData.direction = -1;
+      }
+      if (m.canvas) m.canvas.style.display = 'block';
+    };
+
+    // ── Meteor update logic ───────────────────────────────────────────────────
+    const meteorUpdate = function() {
+      if (!this.spriteData?.meteorActive) return;
+
+      if (this.collisionDelay > 0) {
+        this.collisionDelay -= 1;
+        if (this.collisionDelay === 0) {
+          this.ignoreCollision = false;
+          if (this.spriteData) this.spriteData.ignoreCollision = false;
+        }
+      }
+
+      const dir = this.spriteData?.direction ?? -1;
+      const spd = this.spriteData?.speed ?? 2;
+      const meteorWidth = this.width ?? 0;
+
+      this.position.x += dir * spd;
+
+      if (this.position.x + meteorWidth < 0) {
+        this.position.x = this.gameEnv.innerWidth;
+        this.position.y = spawnY();
+        if (this.spriteData) this.spriteData.direction = -1;
+      }
+    };
+
+    // ── Reaction ──────────────────────────────────────────────────────────────
+    const meteorReaction = () => {
+      if (_respawnInProgress) return;
+      const player = gameEnv.gameObjects.find(obj => obj instanceof Player);
+      if (!player) return;
+
+      _respawnInProgress = true;
+      meteorPool.forEach(m => hideMeteor(m));
+      clearSurvivalTimer();
+
+      const deathMsg = document.createElement('div');
+      Object.assign(deathMsg.style, {
+        position: 'fixed', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'rgba(0,0,0,0.8)', color: '#FF0000',
+        padding: '25px', borderRadius: '12px',
+        fontFamily: "'Press Start 2P', sans-serif", fontSize: '18px',
+        textAlign: 'center', zIndex: '99999',
+        border: '3px solid #FF0000', boxShadow: '0 0 20px rgba(255,0,0,0.5)',
+        width: '340px'
+      });
+      deathMsg.innerHTML = `
+        <div style="margin-bottom:15px;font-size:24px;">☠️ YOU DIED ☠️</div>
+        <div style="margin-bottom:10px;">The meteor hit you!</div>
+        <div style="font-size:14px;">Respawning in 2 seconds...</div>`;
+      document.body.appendChild(deathMsg);
+
+      setTimeout(() => {
+        if (deathMsg.parentNode) deathMsg.parentNode.removeChild(deathMsg);
+        if (player.position) { player.position.x = _respawnPosition.x; player.position.y = _respawnPosition.y; }
+        if (player.velocity) { player.velocity.x = 0; player.velocity.y = 0; }
+        if (player.pressedKeys) player.pressedKeys = {};
+        _respawnInProgress = false;
+      }, 2000);
+    };
+
+    // ── Meteor data factory ───────────────────────────────────────────────────
+    const makeMeteorData = (index) => ({
+      id: `meteor-${index}`,
+      name: `meteor-${index}`,
+      greeting: 'I am a meteor.',
+      src: meteorSpriteSrc,
+      SCALE_FACTOR: 10,
+      ANIMATION_RATE: 1,
+      INIT_POSITION: { x: 0, y: 0 },
+      orientation: { rows: 1, columns: 1 },
+      down:  { row: 0, start: 0, columns: 1 },
+      right: { row: 0, start: 0, columns: 1 },
+      left:  { row: 0, start: 0, columns: 1 },
+      up:    { row: 0, start: 0, columns: 1 },
+      hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
+      isMeteor: true,
+      meteorActive: false,
+      ignoreCollision: true,
+      collisionDelay: 30,
+      speed: 10,
+      direction: -1,
+      dialogues: ['I am a test meteor.'],
+      reaction: meteorReaction,
+      interact: function() { if (this.dialogueSystem) this.showRandomDialogue(); },
+      update: meteorUpdate
+    });
+
+    // ── Activate meteors ──────────────────────────────────────────────────────
+    const activateMeteors = (count) => {
       const player = gameEnv.gameObjects.find(obj => obj instanceof Player);
       const avoidY = player ? player.position.y : null;
       const avoidRadius = player ? Math.max(player.height, player.width) * 1.5 : 80;
 
-      // Ensure existing meteors don't instantly kill the player when we summon more
-      gameEnv.gameObjects.forEach(obj => {
-        if (obj?.spriteData?.isMeteor) {
-          obj.ignoreCollision = true;
-          obj.collisionDelay = 30;
-          // Move existing meteors away to avoid overlap with player
-          obj.position.x = width + 200;
-          obj.position.y = spawnY(avoidY, avoidRadius);
-        }
-      });
+      meteorPool.forEach(m => hideMeteor(m));
 
-      for (let i = 0; i < count; i++) {
-        // Spawn off the right edge, far enough to avoid instant collision
-        const minStartX = width + 200;
-        const safeStartX = player ? Math.max(minStartX, player.position.x + player.width + 200) : minStartX;
-        const startX = safeStartX + (i * 80);
-        const meteorData = createMeteorData(startX, spawnY(avoidY, avoidRadius));
-        const meteor = new Npc(meteorData, gameEnv);
-        gameEnv.gameObjects.push(meteor);
+      const toActivate = Math.min(count, POOL_SIZE);
+      for (let i = 0; i < toActivate; i++) {
+        const startX = gameEnv.innerWidth + 200 + i * 120;
+        const startY = spawnY(avoidY, avoidRadius);
+        showMeteor(meteorPool[i], startX, startY);
       }
     };
 
+    // ── Player ────────────────────────────────────────────────────────────────
     const playerData = {
       id: 'player-test',
       greeting: 'Use WASD to move',
       src: spriteSrc,
       SCALE_FACTOR: 8,
-      STEP_FACTOR: 1000,
+      STEP_FACTOR: 600,
       ANIMATION_RATE: 50,
       INIT_POSITION: { x: 50, y: height - height / 8 },
       pixels: { height: 320, width: 320 },
       orientation: { rows: 4, columns: 4 },
-      down: { row: 0, start: 0, columns: 3 },
-      right: { row: Math.min(1, 4 - 1), start: 0, columns: 3 },
-      left: { row: Math.min(2, 4 - 1), start: 0, columns: 3 },
-      up: { row: Math.min(3, 4 - 1), start: 0, columns: 3 },
+      down:  { row: 0, start: 0, columns: 3 },
+      right: { row: Math.min(1, 3), start: 0, columns: 3 },
+      left:  { row: Math.min(2, 3), start: 0, columns: 3 },
+      up:    { row: Math.min(3, 3), start: 0, columns: 3 },
       hitbox: { widthPercentage: 0.2, heightPercentage: 0.2 },
       keypress: { up: 87, left: 65, down: 83, right: 68 }
     };
 
-    // Prevent repeated death triggers while the player is respawning
     const _respawnPosition = { ...playerData.INIT_POSITION };
 
-    const meteorData = createMeteorData(width + 200, spawnY(), true);
-
+    // ── Alien ─────────────────────────────────────────────────────────────────
     const alienData = {
       id: 'alien',
       greeting: 'Talk to me and I will call the meteors.',
@@ -280,38 +292,40 @@ class GameLeveltest {
       SCALE_FACTOR: 5,
       ANIMATION_RATE: 50,
       INIT_POSITION: { x: 0.9, y: 0.5 },
-      // UFO sprite sheet (4 rows x 3 columns) - show just the first frame
       orientation: { rows: 4, columns: 3 },
-      down: { row: 0, start: 0, columns: 1 },
+      down:  { row: 0, start: 0, columns: 1 },
       right: { row: 0, start: 0, columns: 1 },
-      left: { row: 0, start: 0, columns: 1 },
-      up: { row: 0, start: 0, columns: 1 },
+      left:  { row: 0, start: 0, columns: 1 },
+      up:    { row: 0, start: 0, columns: 1 },
       hitbox: { widthPercentage: 0.25, heightPercentage: 0.25 },
-      dialogues: [
-        'I can call more meteors if you like.',
-        'Ready for some falling rocks?'
-      ],
+      dialogues: ['I can call more meteors if you like.', 'Ready for some falling rocks?'],
       interact: function() {
-        if (this.dialogueSystem) {
-          this.showRandomDialogue();
-        }
-        // Summon 2-3 new meteors at random heights
-        spawnMeteors(2 + Math.floor(Math.random() * 2));
-
-        // Start/refresh the survival timer (only starts after talking to the alien)
+        if (this.dialogueSystem) this.showRandomDialogue();
+        activateMeteors(4); // spawn exactly 4 meteors each time
         resetSurvivalTimer();
       }
     };
 
+    // ── Classes list ──────────────────────────────────────────────────────────
+    const meteorClasses = [];
+    for (let i = 0; i < POOL_SIZE; i++) {
+      meteorClasses.push({ class: Npc, data: makeMeteorData(i) });
+    }
+
     this.classes = [
       { class: GameEnvBackground, data: backgroundData },
       { class: Player, data: playerData },
-      { class: Npc, data: meteorData },
+      ...meteorClasses,
       { class: Npc, data: alienData }
     ];
 
+    // ── initialize() — called by GameLevel after all objects are created ──────
+    this.initialize = () => {
+      const found = gameEnv.gameObjects.filter(obj => obj?.spriteData?.isMeteor);
+      meteorPool.push(...found);
+      meteorPool.forEach(m => hideMeteor(m));
+    };
   }
 }
-
 
 export default GameLeveltest;

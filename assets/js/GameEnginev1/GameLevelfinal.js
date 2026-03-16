@@ -84,9 +84,10 @@ class GameLevelfinal {
 
                 if (!self.killerStarted && !self.playerDead) {
                     self.killerStarted = true;
+                    // 6 second delay — enough time to read the full dialogue
                     setTimeout(() => {
                         self.spawnKiller();
-                    }, 1000);
+                    }, 6000);
                 }
             }
         };
