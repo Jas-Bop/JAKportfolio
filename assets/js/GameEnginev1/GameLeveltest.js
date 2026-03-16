@@ -240,7 +240,7 @@ class GameLeveltest {
       ignoreCollision: true,
       collisionDelay: 30,
       speed: 10,
-      direction: -1,
+      direction: -2.5,
       dialogues: ['I am a test meteor.'],
       reaction: meteorReaction,
       interact: function() { if (this.dialogueSystem) this.showRandomDialogue(); },
