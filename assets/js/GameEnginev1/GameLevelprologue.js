@@ -10,7 +10,7 @@ class GameLevelprologue {
         const height = gameEnv.innerHeight;
 
         // Floor is roughly 58% down the canvas based on the background image
-        const floorY = Math.floor(height * 0.58);
+        const floorY = Math.floor(height * 0.72);
 
         const bgData = {
             name: "custom_bg",
