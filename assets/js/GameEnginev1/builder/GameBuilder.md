@@ -51,6 +51,7 @@ permalink: /gamebuilder
 <div class="gamebuilder-title">
   {{page.title}}
   <a href="{{site.baseurl}}/gamebuilder/doc" target="_blank" rel="noopener noreferrer">📜</a>
+  <a href="{{site.baseurl}}/rpg/game" target="_blank" rel="noopener noreferrer">🕹️</a>
 </div>
 
 <!-- Ensure GameTemplatesV1 is available as a global by loading templates.js -->
@@ -116,7 +117,7 @@ permalink: /gamebuilder
                     <select id="player-select">
                         <option value="" selected disabled>Select sprite…</option>
                         <option value="chillguy">Chill Guy</option>
-                        <option value="Puzzled Penguin">Tux</option>
+                        <option value="tux">Tux</option>
                     </select>
                     <div class="upload-instructions" style="margin-top:6px;">
                         <button id="sprite-instructions-btn" class="btn btn-sm">Upload Instructions ▸</button>
@@ -306,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             skykingdom: { src: "/images/gamebuilder/bg/clouds.jpg", h: 720, w: 1280 }
         },
         sprites: {
-            PuzzledPenguin: { src: "/images/gamify/tux.png", h:256, w:352, rows:8, cols:11 },
+            tux: { src: "/images/gamify/tux.png", h:256, w:352, rows:8, cols:11 },
             chillguy: { src: "/images/gamify/chillguy.png", h:512, w:384, rows:4, cols:3 },
             r2d2: { src: "/images/gamify/r2_idle.png", h:223, w:505, rows:1, cols:3 }
         }
@@ -2748,7 +2749,7 @@ function generateStepCode(currentStep) {
         code = code.replace(/export\s+const\s+gameLevelClasses\s*=\s*\[\s*GameLevelCustom\s*\];?/g, `export default ${newClassName};`);
 
         // Header with usage instructions reflecting chosen name
-        const header = `// Adventure Game Custom Level\n// Exported from GameBuilder on ${(new Date()).toISOString()}\n// How to use this file:\n// 1) Save as assets/js/GameEnginev1/${newClassName}.js in your repo.\n// 2) Reference it in your runner or level selector. Examples:\n//    import GameLevelPlanets from '{{site.baseurl}}/assets/js/GameEnginev1/GameLevelPlanets.js';\n//    import ${newClassName} from '{{site.baseurl}}/assets/js/GameEnginev1/${newClassName}.js';\n//    export const gameLevelClasses = [GameLevelPlanets, ${newClassName}];\n//    // or pass it directly to your GameControl as the only level.\n// 3) Ensure images exist and paths resolve via 'path' provided by the engine.\n// 4) You can add more objects to this.classes inside the constructor.\n`;
+        const header = `// Adventure Game Custom Level\n// Exported from GameBuilder on ${(new Date()).toISOString()}\n// How to use this file:\n// 1) Save as assets/js/adventureGame/${newClassName}.js in your repo.\n// 2) Reference it in your runner or level selector. Examples:\n//    import GameLevelPlanets from '{{site.baseurl}}/assets/js/GameEnginev1/GameLevelPlanets.js';\n//    import ${newClassName} from '{{site.baseurl}}/assets/js/adventureGame/${newClassName}.js';\n//    export const gameLevelClasses = [GameLevelPlanets, ${newClassName}];\n//    // or pass it directly to your GameControl as the only level.\n// 3) Ensure images exist and paths resolve via 'path' provided by the engine.\n// 4) You can add more objects to this.classes inside the constructor.\n`;
         code = header + code;
 
         // Download using the chosen class name
