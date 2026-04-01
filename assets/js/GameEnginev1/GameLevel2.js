@@ -2,6 +2,7 @@ import GameEnvBackground from './essentials/GameEnvBackground.js';
 import Player from './essentials/Player.js';
 import Barrier from './essentials/Barrier.js';
 import Npc from './essentials/Npc.js';
+import Coin from '/assets/js/GameEnginev1.1/Coin.js';
 
 class GameLevel2 {
 
@@ -20,6 +21,7 @@ const scaleY = height / baseHeight;
 // ── Track interval and images so we can clean them up on destroy ──────────
 this._mineInterval = null;
 this._mineImages = [];
+this._coinCounter = null;
 
 function makeBarrier(id,x,y,w,h){
 return {
@@ -137,6 +139,18 @@ const mine_16 = makeMine('mine_16',430,330,15,15);
 const mine_17 = makeMine('mine_17',500,330,15,15);
 const mine_18 = makeMine('mine_18',560,330,15,15);
 
+const coinData = {
+id: 'coin',
+greeting: false,
+INIT_POSITION: { x: 0.12, y: 0.14 },
+width: 40,
+height: 70,
+color: '#FFD700',
+hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+zIndex: 20,
+value: 1
+};
+
 this.classes = [
 { class: GameEnvBackground, data: bgData },
 { class: Player, data: playerData },
@@ -174,11 +188,110 @@ this.classes = [
 { class: Barrier, data: mine_17 },
 { class: Barrier, data: mine_18 },
 
+{ class: Coin, data: coinData },
 { class: Npc, data: npcData }
 ];
 
 // ── initialize() — attach mine sprite images over each mine Barrier ───────
 this.initialize = () => {
+  if (!gameEnv.stats) gameEnv.stats = {};
+  if (typeof gameEnv.stats.coinsCollected !== 'number') {
+    gameEnv.stats.coinsCollected = 0;
+  }
+
+  const blockedRects = gameEnv.gameObjects
+    .filter(obj => obj instanceof Barrier)
+    .map(obj => ({
+      x: obj.x,
+      y: obj.y,
+      width: obj.width,
+      height: obj.height
+    }));
+
+  const coin = gameEnv.gameObjects.find(obj => obj?.spriteData?.id === 'coin');
+  if (coin) {
+    const getCoinSize = () => ({
+      width: coin.width || 40,
+      height: coin.height || 40
+    });
+
+    const overlapsBlockedArea = (x, y) => {
+      const coinSize = getCoinSize();
+      const padding = 8;
+      const left = x + padding;
+      const top = y + padding;
+      const right = x + coinSize.width - padding;
+      const bottom = y + coinSize.height - padding;
+
+      return blockedRects.some(rect => (
+        left < rect.x + rect.width &&
+        right > rect.x &&
+        top < rect.y + rect.height &&
+        bottom > rect.y
+      ));
+    };
+
+    const placeCoinSafely = () => {
+      const coinSize = getCoinSize();
+      const minX = 10;
+      const minY = 10;
+      const maxX = Math.max(minX, gameEnv.innerWidth - coinSize.width - 10);
+      const maxY = Math.max(minY, gameEnv.innerHeight - coinSize.height - 10);
+
+      for (let attempt = 0; attempt < 300; attempt++) {
+        const x = Math.random() * (maxX - minX) + minX;
+        const y = Math.random() * (maxY - minY) + minY;
+        if (!overlapsBlockedArea(x, y)) {
+          coin.position.x = x;
+          coin.position.y = y;
+          coin.resize();
+          return true;
+        }
+      }
+
+      coin.position.x = minX;
+      coin.position.y = minY;
+      coin.resize();
+      return false;
+    };
+
+    const originalCollect = coin.collect.bind(coin);
+    coin.randomizePosition = placeCoinSafely;
+    coin.collect = function() {
+      originalCollect();
+      updateCoinCounter();
+    };
+    placeCoinSafely();
+  }
+
+  const updateCoinCounter = () => {
+    if (!this._coinCounter) return;
+    const totalCoins = gameEnv.stats?.coinsCollected || 0;
+    this._coinCounter.textContent = `Coins: ${totalCoins}`;
+  };
+
+  let counter = document.getElementById('gamelevel2-coin-counter');
+  if (!counter) {
+    counter = document.createElement('div');
+    counter.id = 'gamelevel2-coin-counter';
+    document.body.appendChild(counter);
+  }
+  Object.assign(counter.style, {
+    position: 'fixed',
+    top: '120px',
+    right: '12px',
+    padding: '8px 12px',
+    background: 'rgba(0,0,0,0.75)',
+    color: '#FFD700',
+    fontFamily: "'Press Start 2P', monospace",
+    fontSize: '14px',
+    border: '2px solid #FFD700',
+    borderRadius: '6px',
+    zIndex: '100000'
+  });
+  this._coinCounter = counter;
+  updateCoinCounter();
+
   const mineSrc = path + '/images/gamebuilder/sprites/Mine.jpg';
   this._mineImages = []; // reset in case initialize is called more than once
   for (const obj of gameEnv.gameObjects) {
@@ -211,6 +324,10 @@ this.destroy = () => {
     clearInterval(this._mineInterval);
     this._mineInterval = null;
   }
+  if (this._coinCounter && this._coinCounter.parentNode) {
+    this._coinCounter.parentNode.removeChild(this._coinCounter);
+  }
+  this._coinCounter = null;
   // Remove all mine overlay images
   for (const img of this._mineImages) {
     img.remove();
