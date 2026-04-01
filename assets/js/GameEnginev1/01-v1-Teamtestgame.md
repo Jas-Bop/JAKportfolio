@@ -26,6 +26,7 @@ permalink: /gamify/TestGame
     // Web Server Environment data
     const environment = {
         path:"{{site.baseurl}}",
+        gameName: "TestGame",
         pythonURI: pythonURI,
         javaURI: javaURI,
         fetchOptions: fetchOptions,

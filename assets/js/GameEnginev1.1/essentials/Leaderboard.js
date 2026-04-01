@@ -240,6 +240,37 @@ export default class Leaderboard {
             return;
         }
 
+        const fallbackGame = this.gameControl?.game || gameEnv?.game || null;
+        const fallbackScore = fallbackGame?.stats?.coinsCollected;
+        const fallbackUsername = fallbackGame?.id || fallbackGame?.uid || 'Player';
+        if (!gameEnv.scoreManager && typeof fallbackScore === 'number') {
+            const saveButton = buttonEl || document.getElementById('leaderboard-save-score');
+            if (saveButton) {
+                saveButton.disabled = true;
+                saveButton.textContent = '...';
+            }
+
+            this.submitScore(fallbackUsername, fallbackScore, this.gameName)
+                .then(() => {
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.textContent = '✓';
+                    }
+                    setTimeout(() => {
+                        if (saveButton) saveButton.textContent = '💾';
+                    }, 1200);
+                })
+                .catch(error => {
+                    console.error('Failed to save fallback score from leaderboard:', error);
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.textContent = '💾';
+                    }
+                    alert('Failed to save score. Please try again.');
+                });
+            return;
+        }
+
         if (!gameEnv.scoreManager) {
             gameEnv.initScoreManager()
                 .then(() => this.handleSaveScoreFromLeaderboard(buttonEl))
@@ -929,4 +960,3 @@ export default class Leaderboard {
         return container && container.style.display !== 'none' && !container.classList.contains('initially-hidden');
     }
 }
-

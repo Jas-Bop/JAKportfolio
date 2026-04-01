@@ -2,6 +2,7 @@ import GameEnvBackground from './essentials/GameEnvBackground.js';
 import Player from './essentials/Player.js';
 import Npc from './essentials/Npc.js';
 import Barrier from './essentials/Barrier.js';
+import Coin from '/assets/js/GameEnginev1.1/Coin.js';
 
 class GameLevelfinal {
     constructor(gameEnv) {
@@ -92,10 +93,23 @@ class GameLevelfinal {
             }
         };
 
+        const coinData = {
+            id: 'coin-final',
+            greeting: false,
+            INIT_POSITION: { x: 0.72, y: 0.58 },
+            width: 40,
+            height: 70,
+            color: '#FFD700',
+            hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+            zIndex: 20,
+            value: 1
+        };
+
         this.classes = [
             { class: GameEnvBackground, data: bgData },
             { class: Player, data: playerData },
-            { class: Npc, data: npcData1 }
+            { class: Npc, data: npcData1 },
+            { class: Coin, data: coinData }
         ];
 
         /* BUILDER_ONLY_START */

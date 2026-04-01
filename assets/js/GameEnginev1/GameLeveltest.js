@@ -1,6 +1,7 @@
 import GameEnvBackground from '/assets/js/GameEnginev1/essentials/GameEnvBackground.js';
 import Player from '/assets/js/GameEnginev1/essentials/Player.js';
 import Npc from '/assets/js/GameEnginev1/essentials/Npc.js';
+import Coin from '/assets/js/GameEnginev1.1/Coin.js';
 
 class GameLeveltest {
   constructor(gameEnv) {
@@ -306,6 +307,18 @@ class GameLeveltest {
       }
     };
 
+    const coinData = {
+      id: 'coin-test',
+      greeting: false,
+      INIT_POSITION: { x: 0.45, y: 0.2 },
+      width: 40,
+      height: 70,
+      color: '#FFD700',
+      hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+      zIndex: 20,
+      value: 1
+    };
+
     // ── Classes list ──────────────────────────────────────────────────────────
     const meteorClasses = [];
     for (let i = 0; i < POOL_SIZE; i++) {
@@ -315,6 +328,7 @@ class GameLeveltest {
     this.classes = [
       { class: GameEnvBackground, data: backgroundData },
       { class: Player, data: playerData },
+      { class: Coin, data: coinData },
       ...meteorClasses,
       { class: Npc, data: alienData }
     ];

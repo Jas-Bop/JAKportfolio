@@ -5,6 +5,7 @@ class GameLevel {
   constructor(gameControl) {
     this.gameEnv = new GameEnv()
     this.gameEnv.game = gameControl.game
+    this.gameEnv.stats = gameControl.game.stats
     this.gameEnv.path = gameControl.path
     this.gameEnv.gameContainer = gameControl.gameContainer
     this.gameEnv.gameControl = gameControl
@@ -64,6 +65,10 @@ class GameLevel {
       if (gameObject && typeof gameObject.update === 'function') {
         gameObject.update()
       }
+    }
+
+    if (this.gameEnv.game && typeof this.gameEnv.game.updateLeaderboard === "function") {
+      this.gameEnv.game.updateLeaderboard()
     }
 
     if (typeof this.gameLevel.update === "function") {
