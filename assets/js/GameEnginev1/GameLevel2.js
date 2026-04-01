@@ -2,6 +2,7 @@ import GameEnvBackground from './essentials/GameEnvBackground.js';
 import Player from './essentials/Player.js';
 import Barrier from './essentials/Barrier.js';
 import Npc from './essentials/Npc.js';
+import Leaderbord from './essentials/Leaderboard.js'
 
 class GameLevel2 {
 
@@ -16,6 +17,10 @@ const baseHeight = 400;
 
 const scaleX = width / baseWidth;
 const scaleY = height / baseHeight;
+
+// ── Track interval and images so we can clean them up on destroy ──────────
+this._mineInterval = null;
+this._mineImages = [];
 
 function makeBarrier(id,x,y,w,h){
 return {
@@ -112,13 +117,7 @@ const dbarrier_16 = makeBarrier('dbarrier_16',115,8,23,108);
 const dbarrier_17 = makeBarrier('dbarrier_17',227,9,12,11);
 const dbarrier_18 = makeBarrier('dbarrier_18',356,50,7,20);
 
-// ── Extra barriers — narrow corridors and dead ends ───────────────────────
-// Additional tighter corridors
-
 // ── Mines — inside maze boundary only (x:10-610, y:10-310) ─────────────
-// Top-left chamber (x:10-200, y:10-100)
-// Top-center chamber (x:220-260, y:10-100)
-// Top-right chamber (x:370-470, y:10-65)
 // Mid-left open (x:10-80, y:115-210)
 const mine_6  = makeMine('mine_6',  30,150,15,15);
 const mine_7  = makeMine('mine_7',  60,180,15,15);
@@ -138,7 +137,6 @@ const mine_15 = makeMine('mine_15',290,290,15,15);
 const mine_16 = makeMine('mine_16',430,330,15,15);
 const mine_17 = makeMine('mine_17',500,330,15,15);
 const mine_18 = makeMine('mine_18',560,330,15,15);
-// Spare — spread in reachable open spots
 
 this.classes = [
 { class: GameEnvBackground, data: bgData },
@@ -180,22 +178,15 @@ this.classes = [
 { class: Npc, data: npcData }
 ];
 
-// ── initialize() — tag mine Barrier instances so detection works ─────────
-this.initialize = () => {
-  for (const obj of gameEnv.gameObjects) {
-    // Barrier constructor doesn't copy custom fields like isMine from data,
-    // so we find them by canvas id and tag them directly on the instance
-    if (obj && obj.canvas && obj.canvas.id && obj.canvas.id.startsWith('mine_')) {
-      obj.isMine = true;
-    }
-  }
-};
-
 // ── initialize() — attach mine sprite images over each mine Barrier ───────
 this.initialize = () => {
   const mineSrc = path + '/images/gamebuilder/sprites/Mine.jpg';
+  this._mineImages = []; // reset in case initialize is called more than once
   for (const obj of gameEnv.gameObjects) {
     if (!obj.canvas?.id?.startsWith('mine_')) continue;
+    // Also tag the instance so detection can use it as a fallback
+    obj.isMine = true;
+
     const img = document.createElement('img');
     img.src = mineSrc;
     img.style.position = 'absolute';
@@ -207,59 +198,79 @@ this.initialize = () => {
     img.style.pointerEvents = 'none';
     img.dataset.mineId = obj.canvas.id;
     const container = gameEnv.container || gameEnv.gameContainer;
-    if (container) container.appendChild(img);
+    if (container) {
+      container.appendChild(img);
+      this._mineImages.push(img); // track so we can remove on destroy
+    }
   }
 };
 
-// ── Mine detection ────────────────────────────────────────────────────────
-// Barrier doesn't store data on this, so we identify mines by canvas id prefix
-setInterval(()=>{
-
-const player = gameEnv.gameObjects.find(o => o instanceof Player);
-if(!player) return;
-
-let exploded = false;
-for(const obj of gameEnv.gameObjects){
-  if(exploded) break;
-  // Mines have canvas ids starting with 'mine_'
-  if(!(obj.canvas?.id?.startsWith('mine_'))) continue;
-
-  // Use player center for more forgiving collision
-  const px = player.position.x + (player.width  || 0) / 2;
-  const py = player.position.y + (player.height || 0) / 2;
-  const bx = obj.x;
-  const by = obj.y;
-  const bw = obj.width;
-  const bh = obj.height;
-
-  if(px > bx && px < bx+bw && py > by && py < by+bh){
-    exploded = true;
-    const boom = document.createElement('div');
-    Object.assign(boom.style, {
-      position:'fixed', top:'0', left:'0',
-      width:'100vw', height:'100vh',
-      backgroundColor:'rgba(255,80,0,0.75)',
-      zIndex:'99999',
-      display:'flex', flexDirection:'column',
-      alignItems:'center', justifyContent:'center',
-      fontFamily:"'Press Start 2P', monospace",
-      color:'#fff', textAlign:'center'
-    });
-    boom.innerHTML = `
-      <div style="font-size:72px;margin-bottom:16px;">💥</div>
-      <div style="font-size:32px;color:#FFD700;letter-spacing:4px;">BOOM!</div>
-      <div style="font-size:15px;margin-top:14px;">You stepped on a landmine.</div>
-      <div style="font-size:11px;margin-top:10px;opacity:0.8;">Restarting...</div>`;
-    document.body.appendChild(boom);
-    setTimeout(() => location.reload(), 1500);
+// ── destroy() — stop detection and remove mine images from the DOM ────────
+this.destroy = () => {
+  // Stop the mine detection interval
+  if (this._mineInterval !== null) {
+    clearInterval(this._mineInterval);
+    this._mineInterval = null;
   }
+  // Remove all mine overlay images
+  for (const img of this._mineImages) {
+    img.remove();
+  }
+  this._mineImages = [];
+};
+
+// ── Mine detection ────────────────────────────────────────────────────────
+this._mineInterval = setInterval(() => {
+
+  const player = gameEnv.gameObjects.find(o => o instanceof Player);
+  if (!player) return;
+
+  let exploded = false;
+  for (const obj of gameEnv.gameObjects) {
+    if (exploded) break;
+    // Mines have canvas ids starting with 'mine_'
+    if (!(obj.canvas?.id?.startsWith('mine_'))) continue;
+
+    // Use player center for more forgiving collision
+    const px = player.position.x + (player.width  || 0) / 2;
+    const py = player.position.y + (player.height || 0) / 2;
+    const bx = obj.x;
+    const by = obj.y;
+    const bw = obj.width;
+    const bh = obj.height;
+
+    if (px > bx && px < bx + bw && py > by && py < by + bh) {
+      exploded = true;
+      // Stop the interval immediately so it doesn't fire again during reload
+      clearInterval(this._mineInterval);
+      this._mineInterval = null;
+
+      const boom = document.createElement('div');
+      Object.assign(boom.style, {
+        position:'fixed', top:'0', left:'0',
+        width:'100vw', height:'100vh',
+        backgroundColor:'rgba(255,80,0,0.75)',
+        zIndex:'99999',
+        display:'flex', flexDirection:'column',
+        alignItems:'center', justifyContent:'center',
+        fontFamily:"'Press Start 2P', monospace",
+        color:'#fff', textAlign:'center'
+      });
+      boom.innerHTML = `
+        <div style="font-size:72px;margin-bottom:16px;">💥</div>
+        <div style="font-size:32px;color:#FFD700;letter-spacing:4px;">BOOM!</div>
+        <div style="font-size:15px;margin-top:14px;">You stepped on a landmine.</div>
+        <div style="font-size:11px;margin-top:10px;opacity:0.8;">Restarting...</div>`;
+      document.body.appendChild(boom);
+      setTimeout(() => location.reload(), 1500);
+    }
+  }
+
+}, 50);
+
 }
 
-},50);
-
 }
 
-}
-
-export const gameLevelClasses=[GameLevel2];
+export const gameLevelClasses = [GameLevel2];
 export default GameLevel2;
