@@ -3,7 +3,7 @@ import Player from '/assets/js/GameEnginev1/essentials/Player.js';
 import Npc from '/assets/js/GameEnginev1/essentials/Npc.js';
 import Barrier from '/assets/js/GameEnginev1/essentials/Barrier.js';
 import AiNpc from '/assets/js/GameEnginev1.1/essentials/AiNpc.js';
-
+import Coin from '/assets/js/GameEnginev1.1/Coin.js';
 
 class GameLevelprologue {
     constructor(gameEnv) {
@@ -163,6 +163,19 @@ class GameLevelprologue {
             { class: Npc, data: npcData2 },
             { class: Npc, data: npcData3 }
         ];
+
+
+   const sprite_data_coin = {
+       id: 'coin',
+       greeting: false,
+       INIT_POSITION: { x: 0.6, y: 0.6 },  // 60% from left, 60% from top
+       width: 40,
+       height: 70,
+       color: '#FFD700',
+       hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+       zIndex: 12,
+       value: 1
+   };
 
         /* BUILDER_ONLY_START */
         try {
