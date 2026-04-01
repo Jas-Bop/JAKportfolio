@@ -95,25 +95,25 @@ class GameLevelprologue {
             }
         };
 
-        const sprite_src_chilldude = path + "/images/gamify/historyProf.png";
-        const sprite_greet_chilldude = "Hello! I'm an AI meant to answer all your game questions!";
+        const sprite_src_chilldude = path + "/images/gamify/r2_idle.png";
+        const sprite_greet_chilldude = "Beep boop. I'm R2-D2, and I can answer questions about this mission!";
         const npcData3 = {
             id: "ChillDude",
             greeting: sprite_greet_chilldude,
             src: sprite_src_chilldude,
-            SCALE_FACTOR: 5,
-            ANIMATION_RATE: 10,
-            pixels: { height: 263, width: 559 },
+            SCALE_FACTOR: 4,
+            ANIMATION_RATE: 6,
+            pixels: { height: 223, width: 505 },
             INIT_POSITION: { x: width * 0.53, y: height * 0.28 },
-            orientation: { rows: 4, columns: 9 },
-            down: { row: 3, start: 0, columns: 9 },
-            up: { row: 3, start: 0, columns: 9 },
-            left: { row: 3, start: 0, columns: 9 },
-            right: { row: 3, start: 0, columns: 9 },
-            downLeft: { row: 3, start: 0, columns: 9 },
-            downRight: { row: 3, start: 0, columns: 9 },
-            upLeft: { row: 3, start: 0, columns: 9 },
-            upRight: { row: 3, start: 0, columns: 9 },
+            orientation: { rows: 1, columns: 1 },
+            down: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
+            up: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
+            left: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.04, speed: 0.12 } },
+            right: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.04, speed: 0.12 } },
+            downLeft: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
+            downRight: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
+            upLeft: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
+            upRight: { row: 0, start: 0, columns: 1, wiggle: { angle: 0.05, speed: 0.12 } },
             hitbox: { widthPercentage: 0.2, heightPercentage: 0.3 },
             expertise: "history",
             chatHistory: [],
@@ -156,26 +156,26 @@ class GameLevelprologue {
             }
         };
 
+        const coinData = {
+            id: 'coin',
+            greeting: false,
+            INIT_POSITION: { x: 0.6, y: 0.6 },
+            width: 40,
+            height: 70,
+            color: '#FFD700',
+            hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+            zIndex: 12,
+            value: 1
+        };
+
         this.classes = [
             { class: GameEnvBackground, data: bgData },
             { class: Player, data: playerData },
             { class: Npc, data: npcData1 },
             { class: Npc, data: npcData2 },
-            { class: Npc, data: npcData3 }
+            { class: Npc, data: npcData3 },
+            { class: Coin, data: coinData }
         ];
-
-
-   const sprite_data_coin = {
-       id: 'coin',
-       greeting: false,
-       INIT_POSITION: { x: 0.6, y: 0.6 },  // 60% from left, 60% from top
-       width: 40,
-       height: 70,
-       color: '#FFD700',
-       hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
-       zIndex: 12,
-       value: 1
-   };
 
         /* BUILDER_ONLY_START */
         try {

@@ -45,6 +45,12 @@ class Npc extends Character {
 
     update() {
         this.draw();
+
+        const customUpdate = this.spriteData?.update;
+        if (typeof customUpdate === 'function') {
+            customUpdate.call(this);
+        }
+
         // Check if player is still in collision - add null checks
         const players = this.gameEnv.gameObjects.filter(
             obj => obj && obj.state && obj.state.collisionEvents && obj.state.collisionEvents.includes(this.spriteData.id)
