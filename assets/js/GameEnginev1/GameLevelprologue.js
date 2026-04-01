@@ -2,7 +2,7 @@ import GameEnvBackground from '/assets/js/GameEnginev1/essentials/GameEnvBackgro
 import Player from '/assets/js/GameEnginev1/essentials/Player.js';
 import Npc from '/assets/js/GameEnginev1/essentials/Npc.js';
 import Barrier from '/assets/js/GameEnginev1/essentials/Barrier.js';
-import AiNpc from 'assests/js/GameEnginv1.1/essentials/AiNpc.js';
+import AiNpc from '/assets/js/GameEnginev1.1/essentials/AiNpc.js';
 
 
 class GameLevelprologue {
@@ -95,11 +95,73 @@ class GameLevelprologue {
             }
         };
 
+        const sprite_src_chilldude = path + "/images/gamify/historyProf.png";
+        const sprite_greet_chilldude = "Hello! I'm an AI meant to answer all your game questions!";
+        const npcData3 = {
+            id: "ChillDude",
+            greeting: sprite_greet_chilldude,
+            src: sprite_src_chilldude,
+            SCALE_FACTOR: 5,
+            ANIMATION_RATE: 10,
+            pixels: { height: 263, width: 559 },
+            INIT_POSITION: { x: width * 0.53, y: height * 0.28 },
+            orientation: { rows: 4, columns: 9 },
+            down: { row: 3, start: 0, columns: 9 },
+            up: { row: 3, start: 0, columns: 9 },
+            left: { row: 3, start: 0, columns: 9 },
+            right: { row: 3, start: 0, columns: 9 },
+            downLeft: { row: 3, start: 0, columns: 9 },
+            downRight: { row: 3, start: 0, columns: 9 },
+            upLeft: { row: 3, start: 0, columns: 9 },
+            upRight: { row: 3, start: 0, columns: 9 },
+            hitbox: { widthPercentage: 0.2, heightPercentage: 0.3 },
+            expertise: "history",
+            chatHistory: [],
+            dialogues: [
+                "Ask me anything about this game!",
+                "I have a depth of knowledge of this game...",
+                "Do you want to learn about this game?",
+                "Try out my chat session feature on this game!",
+                "Are you curious about this game? Talk to me!"
+            ],
+            knowledgeBase: {
+                history: [
+                    {
+                        question: "What is this game?",
+                        answer: "This is a game that was made by our creators, Jasan, Krish, and Aarnav."
+                    },
+                    {
+                        question: "Tell me about the next level",
+                        answer: "The next level is a space adventure where you will have to avoid asteroids, in your ship to survive"
+                    },
+                    {
+                        question: "",
+                        answer: "Sorry didn't quite catch that. Try asking about the game or the next level!"
+                    },
+                    {
+                        question: "Hi",
+                        answer: "Hello young space traveler! Welcome to our game. Feel free to ask me anything about the game or the next level!"
+                    }
+                ]
+            },
+            reaction: function() {
+                if (this.dialogueSystem) {
+                    this.showReactionDialogue();
+                } else {
+                    console.log(sprite_greet_chilldude);
+                }
+            },
+            interact: function() {
+                AiNpc.showInteraction(this);
+            }
+        };
+
         this.classes = [
             { class: GameEnvBackground, data: bgData },
             { class: Player, data: playerData },
             { class: Npc, data: npcData1 },
-            { class: Npc, data: npcData2 }
+            { class: Npc, data: npcData2 },
+            { class: Npc, data: npcData3 }
         ];
 
         /* BUILDER_ONLY_START */
@@ -166,77 +228,6 @@ class GameLevelprologue {
         /* BUILDER_ONLY_END */
     }
 }
-
-  const sprite_src_chilldude = path + "/images/gamify/historyProf.png";
-  const sprite_greet_chilldude = "Hello! I'm an AI meant to answer all you game questions!";
-  const sprite_data_chilldude = {
-      id: "ChillDude",
-      greeting: sprite_greet_chilldude,
-      src: sprite_src_chilldude,
-      SCALE_FACTOR: 5,
-      ANIMATION_RATE: 10,
-      pixels: { height: 263, width: 559 },
-      INIT_POSITION: { x: width * 0.53, y: height * 0.28 },
-      orientation: { rows: 4, columns: 9 },
-      
-      // LOCK: use ONLY the 4th row (index 3) for every direction/state
-      down:      { row: 3, start: 0, columns: 9 },
-      up:        { row: 3, start: 0, columns: 9 },
-      left:      { row: 3, start: 0, columns: 9 },
-      right:     { row: 3, start: 0, columns: 9 },
-      downLeft:  { row: 3, start: 0, columns: 9 },
-      downRight: { row: 3, start: 0, columns: 9 },
-      upLeft:    { row: 3, start: 0, columns: 9 },
-      upRight:   { row: 3, start: 0, columns: 9 },
-      
-      hitbox: { widthPercentage: 0.2, heightPercentage: 0.3 },
-      
-      // AI-specific properties (required for AiNpc utility)
-      expertise: "history",              // Topic area for backend
-      chatHistory: [],                   // Conversation memory
-      dialogues: [                       // Random greetings
-          "Ask me anything about this game!",
-          "I have a depth of knowledge of this game...",
-          "Do you want to learn about this game?",
-          "Try out my chat session feature on this game!",
-          "Are you curious about this game? Talk to me!"
-      ],
-      knowledgeBase: {                   // Context hints for AI
-          history: [
-              {
-                  question: "What is this game?",
-                  answer: "This is a game that was made by our creators, Jasan, Krish, and Aarnav."
-              },
-              {
-                  question: "Tell me about the next level",
-                  answer: "The next level is a space adventure where you will have to avoid asteroids, in your ship to survive"
-              },
-              {
-                  question: "",
-                  answer: "Sorry didn't quite catch that. Try asking about the game or the next level!"
-              },
-              {
-                  question: "Hi",
-                  answer: "Hello young space traveler! Welcome to our game. Feel free to ask me anything about the game or the next level!"
-              }
-          ]
-      },
-      
-      // Orchestrator: Handle collision/proximity reactions
-      reaction: function() {
-          if (this.dialogueSystem) {
-              this.showReactionDialogue();
-          } else {
-              console.log(sprite_greet_chilldude);
-          }
-      },
-      
-      // Orchestrator: Handle player interaction (E key press)
-      interact: function() {
-          // Delegate to AiNpc utility for full AI conversation interface
-          AiNpc.showInteraction(this);
-      }
-  };
 
 export const gameLevelClasses = [GameLevelprologue];
 export default GameLevelprologue;
