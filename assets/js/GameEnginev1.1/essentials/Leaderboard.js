@@ -192,7 +192,8 @@ export default class Leaderboard {
 
         if (contentEl && toggleBtn) {
             contentEl.classList.toggle('hidden', !this.isOpen);
-            toggleBtn.textContent = this.isOpen ? '−' : '+';
+            contentEl.style.display = this.isOpen ? 'block' : 'none';
+            toggleBtn.textContent = this.isOpen ? 'Hide Scores' : 'View Scores';
             if (previewEl && titleEl) {
                 if (this.isOpen) {
                     titleEl.style.display = 'inline';
@@ -240,56 +241,47 @@ export default class Leaderboard {
             return;
         }
 
-        const fallbackGame = this.gameControl?.game || gameEnv?.game || null;
-        const fallbackScore = fallbackGame?.stats?.coinsCollected;
-        const fallbackUsername = fallbackGame?.id || fallbackGame?.uid || 'Player';
-        if (!gameEnv.scoreManager && typeof fallbackScore === 'number') {
-            const saveButton = buttonEl || document.getElementById('leaderboard-save-score');
-            if (saveButton) {
-                saveButton.disabled = true;
-                saveButton.textContent = '...';
-            }
+        const scoreVar = gameEnv.scoreConfig?.scoreVar
+            || gameEnv.scoreConfig?.counterVar
+            || 'coinsCollected';
+        const currentScore = Number(gameEnv.stats?.[scoreVar] ?? 0);
+        const defaultName = this.gameControl?.game?.id
+            || this.gameControl?.game?.uid
+            || 'Player';
+        const enteredName = window.prompt('Enter a name for the leaderboard:', defaultName);
+        const username = enteredName ? enteredName.trim() : '';
 
-            this.submitScore(fallbackUsername, fallbackScore, this.gameName)
-                .then(() => {
-                    if (saveButton) {
-                        saveButton.disabled = false;
-                        saveButton.textContent = '✓';
-                    }
-                    setTimeout(() => {
-                        if (saveButton) saveButton.textContent = '💾';
-                    }, 1200);
-                })
-                .catch(error => {
-                    console.error('Failed to save fallback score from leaderboard:', error);
-                    if (saveButton) {
-                        saveButton.disabled = false;
-                        saveButton.textContent = '💾';
-                    }
-                    alert('Failed to save score. Please try again.');
-                });
-            return;
-        }
-
-        if (!gameEnv.scoreManager) {
-            gameEnv.initScoreManager()
-                .then(() => this.handleSaveScoreFromLeaderboard(buttonEl))
-                .catch(error => {
-                    console.error('Failed to initialize scoreManager:', error);
-                    alert('Score feature not available');
-                });
+        if (!username) {
             return;
         }
 
         const saveButton = buttonEl || document.getElementById('leaderboard-save-score');
-        gameEnv.scoreManager.saveScore(saveButton)
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = '...';
+        }
+
+        const fallbackGame = this.gameControl?.game || gameEnv?.game || null;
+        const fallbackScore = typeof currentScore === 'number'
+            ? currentScore
+            : Number(fallbackGame?.stats?.coinsCollected ?? 0);
+
+        this.submitScore(username, fallbackScore, this.gameName)
             .then(() => {
-                if (this.mode === 'dynamic') {
-                    return this.fetchLeaderboard();
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = '✓';
                 }
+                setTimeout(() => {
+                    if (saveButton) saveButton.textContent = '💾';
+                }, 1200);
             })
             .catch(error => {
                 console.error('Failed to save score from leaderboard:', error);
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = '💾';
+                }
                 alert('Failed to save score. Please try again.');
             });
     }
@@ -302,7 +294,8 @@ export default class Leaderboard {
 
         this.isOpen = !this.isOpen;
         content.classList.toggle('hidden', !this.isOpen);
-        btn.textContent = this.isOpen ? '−' : '+';
+        content.style.display = this.isOpen ? 'block' : 'none';
+        btn.textContent = this.isOpen ? 'Hide Scores' : 'View Scores';
 
         // Always hide back button when collapsed
         const backBtn = document.getElementById('back-btn');

@@ -37,7 +37,25 @@ class GameEnv {
         this.game = null; // Reference to the Game static environment variables
         this.path = ''; // Reference to the resource path
         this.gameControl = null; // Reference to the GameControl instance
-        this.gameObjects = []; // Reference list of game objects instancces    
+        this.gameObjects = []; // Reference list of game objects instancces
+
+        /* Game statistics - shared across levels */
+        this.stats = {
+            coinsCollected: 0,
+            levelsCompleted: 0,
+            sessionTime: 0,
+            totalPowerUps: 0
+        };
+
+        /* Score configuration for leaderboard/save flow */
+        this.scoreConfig = {
+            counterVar: 'coinsCollected',
+            counterLabel: 'Coins Collected',
+            scoreVar: 'coinsCollected'
+        };
+
+        /* ScoreManager instance - lazy initialized */
+        this.scoreManager = null;
     }
 
     /**
@@ -67,6 +85,25 @@ class GameEnv {
         }
         
         this.size();
+    }
+
+    /**
+     * Initialize the score manager used by Leaderboard.js save flow.
+     */
+    async initScoreManager() {
+        if (this.scoreManager) {
+            return this.scoreManager;
+        }
+
+        try {
+            const module = await import(`${this.path}/assets/js/GameEnginev1.1/essentials/GameEnvScore.js`);
+            const GameEnvScore = module.default;
+            this.scoreManager = new GameEnvScore(this);
+            return this.scoreManager;
+        } catch (error) {
+            console.error('GameEnv: Failed to initialize ScoreManager:', error);
+            return null;
+        }
     }
 
     /**
@@ -128,6 +165,7 @@ class GameEnv {
 
  
     clear() {
+        if (!this.ctx) return;
         this.ctx.clearRect(0, 0, this.innerWidth, this.innerHeight);
     }
 

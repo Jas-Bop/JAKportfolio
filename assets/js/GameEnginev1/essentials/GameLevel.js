@@ -32,6 +32,12 @@ class GameLevel {
         this.gameLevel.initialize()
     }
 
+    if (this.gameEnv.game && typeof this.gameEnv.game._ensureActiveScoreManager === "function") {
+      this.gameEnv.game._ensureActiveScoreManager().catch(error => {
+        console.warn('Failed to initialize score manager for level:', error);
+      });
+    }
+
     window.addEventListener("resize", this.resize.bind(this))
   }
 

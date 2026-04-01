@@ -5,6 +5,7 @@ import Leaderboard from '/assets/js/GameEnginev1.1/essentials/Leaderboard.js';
 class Game {
     constructor(environment) {
         this.environment = environment;
+        this.gameName = environment.gameName || 'TestGame';
         this.path = environment.path;
         this.gameContainer = environment.gameContainer;
         this.gameCanvas = environment.gameCanvas;
@@ -33,6 +34,7 @@ class Game {
         this.updateLeaderboard();
         
         this.gameControl.start();
+        this._ensureActiveScoreManager();
     }
 
     static main(environment) {
@@ -130,6 +132,7 @@ class Game {
         if (saveButton) {
             Object.assign(saveButton.style, {
                 marginTop: '8px',
+                marginRight: '8px',
                 padding: '4px 8px',
                 fontSize: '12px',
                 background: '#FFD700',
@@ -141,7 +144,18 @@ class Game {
         }
 
         if (toggleButton) {
-            toggleButton.style.display = 'none';
+            toggleButton.style.display = 'inline-block';
+            toggleButton.textContent = this.leaderboard?.isOpen ? 'Hide Scores' : 'View Scores';
+            Object.assign(toggleButton.style, {
+                marginTop: '8px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                background: '#ffffff',
+                color: '#000',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+            });
         }
 
         if (backButton) {
@@ -149,8 +163,24 @@ class Game {
         }
 
         if (content) {
-            content.classList.add('hidden');
-            content.style.display = 'none';
+            Object.assign(content.style, {
+                position: 'fixed',
+                top: '130px',
+                right: '10px',
+                left: 'auto',
+                width: '360px',
+                maxHeight: '420px',
+                overflowY: 'auto',
+                background: 'rgba(0, 0, 0, 0.92)',
+                border: '2px solid #FFD700',
+                borderRadius: '8px',
+                zIndex: '100001',
+                padding: '12px 16px'
+            });
+            if (!this.leaderboard?.isOpen) {
+                content.classList.add('hidden');
+                content.style.display = 'none';
+            }
         }
     }
 
@@ -177,6 +207,19 @@ class Game {
             currentScoreEl.textContent = `Coins: ${totalCoins}`;
             currentScoreEl.style.display = 'none';
         }
+    }
+
+    async _ensureActiveScoreManager() {
+        const activeGameEnv = this.gameControl?.currentLevel?.gameEnv || this.gameControl?.gameEnv;
+        if (!activeGameEnv || activeGameEnv.scoreManager) {
+            return activeGameEnv?.scoreManager || null;
+        }
+
+        const manager = await activeGameEnv.initScoreManager();
+        if (manager) {
+            manager.updateScoreDisplay(activeGameEnv.stats?.coinsCollected || 0);
+        }
+        return manager;
     }
 }
 
