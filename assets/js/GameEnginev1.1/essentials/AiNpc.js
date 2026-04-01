@@ -65,7 +65,7 @@ class AiNpc {
         
         // Use a random question from knowledgeBase as placeholder hint, or fall back to generic
         let placeholder = `Ask about ${spriteData.expertise}...`;
-        const topics = spriteData.knowledgeBase?.[spriteData.expertise] || [];
+        const topics = AiNpc.getKnowledgeTopics(spriteData);
         if (topics.length > 0) {
             const randomTopic = topics[Math.floor(Math.random() * topics.length)];
             placeholder = randomTopic.question;
@@ -134,14 +134,19 @@ class AiNpc {
      * @param {HTMLElement} container - The UI container to attach
      */
     static attachToDialogue(dialogueSystem, container) {
-        const dialogueBox = document.getElementById('custom-dialogue-box-' + dialogueSystem.safeId);
+        const dialogueId = dialogueSystem?.safeId || dialogueSystem?.id;
+        const dialogueBox = dialogueId
+            ? document.getElementById('custom-dialogue-box-' + dialogueId)
+            : null;
         if (dialogueBox) {
             // Remove any existing AI NPC containers first
             const existingContainers = dialogueBox.querySelectorAll('.ai-npc-container');
             existingContainers.forEach(existing => existing.remove());
             
             // Find the close button using its specific ID
-            const closeBtn = document.getElementById('dialogue-close-btn-' + dialogueSystem.safeId);
+            const closeBtn = dialogueId
+                ? document.getElementById('dialogue-close-btn-' + dialogueId) || dialogueSystem?.closeBtn
+                : dialogueSystem?.closeBtn;
             if (closeBtn && closeBtn.parentNode === dialogueBox) {
                 dialogueBox.insertBefore(container, closeBtn);
             } else {
@@ -163,13 +168,20 @@ class AiNpc {
         responseArea.style.display = 'block';
 
         try {
+            const matchedAnswer = AiNpc.findKnowledgeBaseAnswer(spriteData, userMessage);
+            if (matchedAnswer) {
+                spriteData.chatHistory.push({ role: 'ai', message: matchedAnswer });
+                AiNpc.showResponse(matchedAnswer, responseArea);
+                return;
+            }
+
             // Build knowledge context
             let knowledgeContext = '';
-            const topics = spriteData.knowledgeBase?.[spriteData.expertise] || [];
+            const topics = AiNpc.getKnowledgeTopics(spriteData);
             if (topics.length > 0) {
-                knowledgeContext = 'Here are some example topics I can help with:\n';
+                knowledgeContext = 'Here are some question and answer pairs I can help with:\n';
                 topics.slice(0, 3).forEach(t => {
-                    knowledgeContext += `- ${t.question}\n`;
+                    knowledgeContext += `Q: ${t.question}\nA: ${t.answer}\n`;
                 });
                 knowledgeContext += '\n';
             }
@@ -210,6 +222,23 @@ class AiNpc {
                 responseArea
             );
         }
+    }
+
+    static getKnowledgeTopics(spriteData) {
+        const rawTopics = spriteData.knowledgeBase?.[spriteData.expertise] || [];
+        return rawTopics.filter(topic => topic?.question && topic?.answer);
+    }
+
+    static findKnowledgeBaseAnswer(spriteData, userMessage) {
+        const normalizedMessage = userMessage.trim().toLowerCase();
+        if (!normalizedMessage) return null;
+
+        const topics = AiNpc.getKnowledgeTopics(spriteData);
+        const exactMatch = topics.find(
+            topic => topic.question.trim().toLowerCase() === normalizedMessage
+        );
+
+        return exactMatch ? exactMatch.answer : null;
     }
 
     /**
