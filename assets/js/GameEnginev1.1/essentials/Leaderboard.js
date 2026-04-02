@@ -131,6 +131,34 @@ export default class Leaderboard {
         this.init();
     }
 
+    _getDynamicStorageKey(gameName = null) {
+        return `score_counter_${gameName || this.gameName}`;
+    }
+
+    _saveDynamicScoreLocally(username, score, gameName = null) {
+        const resolvedGameName = gameName || this.gameName;
+        const storageKey = this._getDynamicStorageKey(resolvedGameName);
+        const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const entry = {
+            id: `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+            payload: {
+                user: username,
+                score: Number(score) || 0,
+                gameName: resolvedGameName
+            },
+            timestamp: new Date().toISOString()
+        };
+
+        stored.push(entry);
+        localStorage.setItem(storageKey, JSON.stringify(stored));
+        return entry;
+    }
+
+    _readDynamicScoresLocally(gameName = null) {
+        const storageKey = this._getDynamicStorageKey(gameName);
+        return JSON.parse(localStorage.getItem(storageKey) || '[]');
+    }
+
     init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.mount());
@@ -630,14 +658,6 @@ export default class Leaderboard {
             })
             .catch(error => {
                 console.error('Error fetching leaderboard:', error);
-                // Check for authentication errors (401 or 403 status)
-                if (error.message && (error.message.includes('401') || error.message.includes('403'))) {
-                    const list = document.getElementById('leaderboard-list');
-                    if (list) {
-                        list.innerHTML = '<p class="error">Please login to access this feature.</p>';
-                    }
-                    return;
-                }
                 // Fallback to local data if fetch fails
                 const storageKey = `elementary_leaderboard_${this.gameName}`;
                 const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -750,33 +770,28 @@ export default class Leaderboard {
         
         // If backend unavailable, load local scores
         if (!this.hasBackend) {
-            const storageKey = `score_counter_${this.gameName}`;
-            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const transformed = stored.map(e => ({
-                id: e.id,
-                payload: { user: e.payload.user, score: e.payload.score, gameName: e.payload.gameName },
-                timestamp: e.timestamp
-            }));
-            this.displayLeaderboard(transformed);
-            return;
+            this.displayLeaderboard(this._readDynamicScoresLocally());
+            return Promise.resolve();
         }
 
-        fetch(`${javaURI}/api/events/SCORE_COUNTER`, fetchOptions)
+        return fetch(`${javaURI}/api/events/SCORE_COUNTER`, fetchOptions)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 return res.json();
             })
             .then(data => {
                 this.displayLeaderboard(data);
+                return data;
             })
             .catch(err => {
                 console.error('Error fetching dynamic leaderboard:', err);
-                // Check for authentication errors (401 or 403 status)
-                if (err.message && (err.message.includes('401') || err.message.includes('403'))) {
-                    list.innerHTML = `<p class="error">Please login to access this feature.</p>`;
-                } else {
-                    list.innerHTML = `<p class="error">Failed to load leaderboard</p>`;
+                const localScores = this._readDynamicScoresLocally();
+                if (localScores.length > 0) {
+                    this.displayLeaderboard(localScores);
+                    return localScores;
                 }
+                list.innerHTML = `<p class="loading">No saved scores yet. Guest saves will appear here.</p>`;
+                return [];
             });
     }
 
@@ -800,16 +815,7 @@ export default class Leaderboard {
 
         // If backend unavailable, store locally and update display
         if (!this.hasBackend) {
-            const storageKey = `score_counter_${gameName || this.gameName}`;
-            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const entry = {
-                id: `local-${Date.now()}`,
-                payload: { user: username, score: score, gameName: gameName || this.gameName },
-                timestamp: new Date().toISOString()
-            };
-            stored.push(entry);
-            localStorage.setItem(storageKey, JSON.stringify(stored));
-
+            const entry = this._saveDynamicScoreLocally(username, score, gameName);
             if (this.mode === 'dynamic') this.fetchLeaderboard();
             return Promise.resolve(entry);
         }
@@ -847,6 +853,7 @@ export default class Leaderboard {
             })
             .then(savedEntry => {
                 console.log('Score saved successfully to SCORE_COUNTER:', savedEntry);
+                this._saveDynamicScoreLocally(username, score, gameName);
 
                 // Refresh leaderboard if we're in dynamic mode
                 if (this.mode === 'dynamic') {
@@ -854,6 +861,14 @@ export default class Leaderboard {
                 }
 
                 return savedEntry;
+            })
+            .catch(error => {
+                console.error('Dynamic score save failed, using local fallback:', error);
+                const fallbackEntry = this._saveDynamicScoreLocally(username, score, gameName);
+                if (this.mode === 'dynamic') {
+                    return this.fetchLeaderboard().then(() => fallbackEntry);
+                }
+                return fallbackEntry;
             });
     }
 
@@ -874,6 +889,7 @@ export default class Leaderboard {
                 game: event.payload?.gameName || event.payload?.game || 'Unknown',
                 timestamp: event.timestamp
             }))
+            .filter(event => (event.gameName || event.game) === this.gameName)
             .sort((a, b) => b.score - a.score); // Sort by score descending
 
         let html = '';
