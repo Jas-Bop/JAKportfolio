@@ -93,6 +93,7 @@ class Game {
         const content = document.getElementById('leaderboard-content');
         const preview = document.getElementById('leaderboard-preview');
         const title = document.getElementById('leaderboard-title');
+        const currentScore = document.getElementById('leaderboard-current-score');
 
         if (!container || !header) return;
 
@@ -120,7 +121,15 @@ class Game {
             title.style.fontSize = '12px';
             title.style.fontWeight = '700';
             title.style.color = '#FFD700';
-            title.style.marginBottom = '6px';
+            title.style.marginBottom = '4px';
+        }
+
+        if (currentScore) {
+            currentScore.style.display = 'block';
+            currentScore.style.fontSize = '13px';
+            currentScore.style.fontWeight = '700';
+            currentScore.style.color = '#FFD700';
+            currentScore.style.marginBottom = '6px';
         }
 
         if (preview) {
@@ -205,7 +214,7 @@ class Game {
         }
         if (currentScoreEl) {
             currentScoreEl.textContent = `Coins: ${totalCoins}`;
-            currentScoreEl.style.display = 'none';
+            currentScoreEl.style.display = 'block';
         }
     }
 
