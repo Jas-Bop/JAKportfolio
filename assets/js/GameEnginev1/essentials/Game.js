@@ -94,6 +94,7 @@ class Game {
         const preview = document.getElementById('leaderboard-preview');
         const title = document.getElementById('leaderboard-title');
         const currentScore = document.getElementById('leaderboard-current-score');
+        const closeViewButton = document.getElementById('leaderboard-close-view');
 
         if (!container || !header) return;
 
@@ -190,6 +191,19 @@ class Game {
                 content.classList.add('hidden');
                 content.style.display = 'none';
             }
+        }
+
+        if (closeViewButton) {
+            Object.assign(closeViewButton.style, {
+                padding: '2px 8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                background: '#FFD700',
+                color: '#000',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+            });
         }
     }
 

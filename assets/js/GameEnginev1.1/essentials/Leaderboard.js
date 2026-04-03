@@ -159,6 +159,21 @@ export default class Leaderboard {
         return JSON.parse(localStorage.getItem(storageKey) || '[]');
     }
 
+    _getSharedLeaderboardBaseURI() {
+        if (typeof location !== 'undefined' &&
+            (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+            return 'https://spring.opencodingsociety.com';
+        }
+        return javaURI;
+    }
+
+    _getSharedLeaderboardFetchOptions() {
+        return {
+            ...fetchOptions,
+            credentials: 'omit'
+        };
+    }
+
     init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.mount());
@@ -207,6 +222,9 @@ export default class Leaderboard {
                 </div>
             </div>
             <div class="leaderboard-content hidden" id="leaderboard-content" style="padding:12px 16px;">
+                <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+                    <button id="leaderboard-close-view" aria-label="Close leaderboard" title="Close leaderboard">X</button>
+                </div>
                 <div id="leaderboard-list"></div>
             </div>
         `;
@@ -245,6 +263,12 @@ export default class Leaderboard {
         document
             .getElementById('leaderboard-save-score')
             .addEventListener('click', (e) => this.handleSaveScoreFromLeaderboard(e.currentTarget));
+
+        document
+            .getElementById('leaderboard-close-view')
+            .addEventListener('click', () => {
+                if (this.isOpen) this.toggle();
+            });
 
         // Default to dynamic leaderboard mode
         this.setupDynamicMode();
@@ -767,21 +791,33 @@ export default class Leaderboard {
 
         const list = document.getElementById('leaderboard-list');
         if (!list) return;
-        
+
+        const sharedBaseURI = this._getSharedLeaderboardBaseURI();
+
         // If backend unavailable, load local scores
-        if (!this.hasBackend) {
+        if (!sharedBaseURI) {
             this.displayLeaderboard(this._readDynamicScoresLocally());
             return Promise.resolve();
         }
 
-        return fetch(`${javaURI}/api/events/SCORE_COUNTER`, fetchOptions)
+        return fetch(`${sharedBaseURI}/api/events/ELEMENTARY_LEADERBOARD`, this._getSharedLeaderboardFetchOptions())
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 return res.json();
             })
             .then(data => {
-                this.displayLeaderboard(data);
-                return data;
+                const transformed = data
+                    .map(event => ({
+                        id: event.id,
+                        payload: {
+                            user: event.payload?.user || 'Anonymous',
+                            score: event.payload?.score || 0,
+                            gameName: event.payload?.gameName || this.gameName
+                        },
+                        timestamp: event.timestamp
+                    }));
+                this.displayLeaderboard(transformed);
+                return transformed;
             })
             .catch(err => {
                 console.error('Error fetching dynamic leaderboard:', err);
@@ -810,17 +846,19 @@ export default class Leaderboard {
             return Promise.reject(new Error('Invalid username or score'));
         }
 
-        const endpoint = '/api/events/SCORE_COUNTER';
+        const endpoint = '/api/events/ELEMENTARY_LEADERBOARD';
         console.log('POST endpoint:', endpoint);
+        const resolvedGameName = gameName || this.gameName;
+        const sharedBaseURI = this._getSharedLeaderboardBaseURI();
 
         // If backend unavailable, store locally and update display
-        if (!this.hasBackend) {
-            const entry = this._saveDynamicScoreLocally(username, score, gameName);
+        if (!sharedBaseURI) {
+            const entry = this._saveDynamicScoreLocally(username, score, resolvedGameName);
             if (this.mode === 'dynamic') this.fetchLeaderboard();
             return Promise.resolve(entry);
         }
 
-        const url = `${javaURI}${endpoint}`;
+        const url = `${sharedBaseURI}${endpoint}`;
         console.log('Full URL:', url);
 
         // Create payload matching Java backend AlgorithmicEvent structure
@@ -828,7 +866,7 @@ export default class Leaderboard {
             payload: {
                 user: username,
                 score: score,
-                gameName: gameName || this.gameName
+                gameName: resolvedGameName
             }
         };
         console.log('Payload:', JSON.stringify(requestBody));
@@ -837,7 +875,7 @@ export default class Leaderboard {
         return fetch(
             url,
             {
-                ...fetchOptions,
+                ...this._getSharedLeaderboardFetchOptions(),
                 method: 'POST',
                 body: JSON.stringify(requestBody)
             }
@@ -852,8 +890,8 @@ export default class Leaderboard {
                 return res.json();
             })
             .then(savedEntry => {
-                console.log('Score saved successfully to SCORE_COUNTER:', savedEntry);
-                this._saveDynamicScoreLocally(username, score, gameName);
+                console.log('Score saved successfully to shared leaderboard:', savedEntry);
+                this._saveDynamicScoreLocally(username, score, resolvedGameName);
 
                 // Refresh leaderboard if we're in dynamic mode
                 if (this.mode === 'dynamic') {
@@ -863,8 +901,8 @@ export default class Leaderboard {
                 return savedEntry;
             })
             .catch(error => {
-                console.error('Dynamic score save failed, using local fallback:', error);
-                const fallbackEntry = this._saveDynamicScoreLocally(username, score, gameName);
+                console.error('Shared score save failed, using local fallback:', error);
+                const fallbackEntry = this._saveDynamicScoreLocally(username, score, resolvedGameName);
                 if (this.mode === 'dynamic') {
                     return this.fetchLeaderboard().then(() => fallbackEntry);
                 }
