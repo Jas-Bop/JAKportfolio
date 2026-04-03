@@ -2,6 +2,8 @@
 import GameLevel from "./GameLevel.js";
 
 class GameControl {
+    static SKIP_LEVEL_PASSWORD = 'ABCD1234';
+
     /**
      * GameControl class to manage the game levels and transitions
      * @param {*} path - The path to the game assets
@@ -195,7 +197,16 @@ class GameControl {
      */
     handleExitKey(event) {
         if (event.key === 'Escape') {
-            this.currentLevel.continue = false;
+            const enteredPassword = window.prompt('Enter the password to skip this level:');
+            if (enteredPassword === null) {
+                return;
+            }
+
+            if (enteredPassword.trim() === GameControl.SKIP_LEVEL_PASSWORD) {
+                this.currentLevel.continue = false;
+            } else {
+                window.alert('Incorrect password. Level skip cancelled.');
+            }
         }
     }
     
