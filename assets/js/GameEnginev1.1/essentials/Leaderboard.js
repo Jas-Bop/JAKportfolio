@@ -116,6 +116,8 @@ export default class Leaderboard {
         this.gameControl = gameControl;
         this.gameName = options.gameName || 'Global';
         this.parentId = options.parentId || null;
+        this.customJavaURI = options.javaURI || null;
+        this.customFetchOptions = options.fetchOptions || null;
         // Modular visibility options (backward compatible):
         // - initiallyHidden: boolean (legacy)
         // - initiallyVisible: boolean
@@ -152,7 +154,7 @@ export default class Leaderboard {
 
         // Flag whether a backend URI is available; allow UI to mount even when
         // backend is unreachable so leaderboard can operate in offline/local mode.
-        this.hasBackend = Boolean(javaURI);
+        this.hasBackend = Boolean(this.customJavaURI || javaURI);
 
         this.init();
     }
@@ -186,16 +188,23 @@ export default class Leaderboard {
     }
 
     _getSharedLeaderboardBaseURI() {
-        if (typeof location !== 'undefined' &&
+        const resolvedURI = this.customJavaURI || javaURI;
+        if (!resolvedURI) {
+            return null;
+        }
+
+        // When running locally, prefer the shared backend unless a custom URI is explicitly set.
+        if (!this.customJavaURI && typeof location !== 'undefined' &&
             (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
             return 'https://spring.opencodingsociety.com';
         }
-        return javaURI;
+        return resolvedURI;
     }
 
     _getSharedLeaderboardFetchOptions() {
+        const baseFetchOptions = this.customFetchOptions || fetchOptions;
         return {
-            ...fetchOptions,
+            ...baseFetchOptions,
             credentials: 'omit'
         };
     }

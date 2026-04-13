@@ -79,6 +79,8 @@ class Game {
         if (!this.leaderboard) {
             this.leaderboard = new Leaderboard(this.gameControl, {
                 gameName: this.environment.gameName || 'TestGame',
+                javaURI: this.javaURI,
+                fetchOptions: this.fetchOptions,
                 initiallyHidden: false
             });
         }

@@ -40,6 +40,8 @@ permalink: /gamify/TestGame
     const game = Core.main(environment, GameControl);
     const leaderboard = new Leaderboard(game.gameControl, {
         gameName: environment.gameName,
+        javaURI: environment.javaURI,
+        fetchOptions: environment.fetchOptions,
         initiallyHidden: false
     });
     window.leaderboardInstance = leaderboard;
