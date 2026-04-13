@@ -28,6 +28,7 @@ class GameCore {
     constructor(environment, GameControlClass) {
     this.environment = environment;
     this.path = environment.path;
+    this.gameName = environment.gameName || environment.gname || 'Global';
     this.gameContainer = environment.gameContainer;
     this.gameCanvas = environment.gameCanvas;
     this.pythonURI = environment.pythonURI;
@@ -451,7 +452,7 @@ class GameCore {
 
             const instantiateLeaderboard = (LeaderboardClass) => {
                 const leaderboardOptions = {
-                    gameName: 'AdventureGame',
+                    gameName: this.gameName,
                     // Default to body/fixed overlay so leaderboard never shifts game layout.
                     // Can still be overridden per page via environment.leaderboardOptions.parentId.
                     parentId: null,

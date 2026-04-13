@@ -247,6 +247,7 @@ export default class Leaderboard {
                     </div>
                     <div style="display:flex;flex-direction:column;gap:4px;">
                         <span id="leaderboard-current-score" style="font-size:14px;font-weight:700;color:#ffffff;">Score: 0</span>
+                        <span id="leaderboard-level-count" style="font-size:13px;font-weight:600;color:#d8d8d8;">Level Count: 0</span>
                         <span id="leaderboard-preview" style="font-size:13px;color:#cfcfcf;display:none;">
                           <span id="leaderboard-coins-preview">Coins Collected: 0</span> | <span id="leaderboard-highscore-preview">High Score: 0</span>
                         </span>
@@ -863,7 +864,7 @@ export default class Leaderboard {
             return Promise.resolve();
         }
 
-        return fetch(`${sharedBaseURI}/api/events/ELEMENTARY_LEADERBOARD`, this._getSharedLeaderboardFetchOptions())
+        return fetch(`${sharedBaseURI}/api/events/SCORE_COUNTER`, this._getSharedLeaderboardFetchOptions())
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 return res.json();
@@ -909,7 +910,7 @@ export default class Leaderboard {
             return Promise.reject(new Error('Invalid username or score'));
         }
 
-        const endpoint = '/api/events/ELEMENTARY_LEADERBOARD';
+        const endpoint = '/api/events/SCORE_COUNTER';
         console.log('POST endpoint:', endpoint);
         const resolvedGameName = gameName || this.gameName;
         const sharedBaseURI = this._getSharedLeaderboardBaseURI();

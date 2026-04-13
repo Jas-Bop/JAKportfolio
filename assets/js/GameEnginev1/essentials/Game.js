@@ -30,8 +30,10 @@ class Game {
             this.gameUI.init();
         }
 
-        this.ensureLeaderboardUI();
-        this.updateLeaderboard();
+        if (!this.environment.disableAutoLeaderboard) {
+            this.ensureLeaderboardUI();
+            this.updateLeaderboard();
+        }
         
         this.gameControl.start();
         this._ensureActiveScoreManager();
@@ -208,6 +210,7 @@ class Game {
     }
 
     updateLeaderboard() {
+        if (this.environment.disableAutoLeaderboard) return;
         this.ensureLeaderboardUI();
         const levelIndex = (this.gameControl?.currentLevelIndex ?? 0) + 1;
         const totalLevels = this.gameControl?.levelClasses?.length ?? 0;

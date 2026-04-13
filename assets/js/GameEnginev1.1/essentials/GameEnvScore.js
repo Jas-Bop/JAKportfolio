@@ -176,6 +176,25 @@ export default class GameEnvScore {
         this.updateScoreDisplay(currentValue);
     }
 
+    _syncSupplementalStats() {
+        const levelCountEl = document.getElementById('leaderboard-level-count');
+        if (levelCountEl) {
+            const activeControl = this.gameEnv.game?.getActiveControl
+                ? this.gameEnv.game.getActiveControl()
+                : this.gameEnv.gameControl;
+            const totalLevels = Array.isArray(activeControl?.levelClasses) ? activeControl.levelClasses.length : 0;
+            const currentLevel = typeof activeControl?.currentLevelIndex === 'number'
+                ? activeControl.currentLevelIndex + 1
+                : 1;
+
+            if (totalLevels > 0) {
+                levelCountEl.textContent = `Level: ${currentLevel}/${totalLevels}`;
+            } else {
+                levelCountEl.textContent = `Level: ${currentLevel}`;
+            }
+        }
+    }
+
     /**
      * Toggle visibility of the score counter
      */
@@ -187,6 +206,7 @@ export default class GameEnvScore {
             leaderboardScore.style.display = 'inline';
             leaderboardScore.textContent = `${labelText}: ${Number(this._currentValue || 0).toLocaleString()}`;
         }
+        this._syncSupplementalStats();
 
         console.log(`${this.classId}: Leaderboard score text synced with leaderboard visibility`);
     }
@@ -210,6 +230,7 @@ export default class GameEnvScore {
             leaderboardScore.style.display = 'inline';
             leaderboardScore.textContent = `${labelText}: ${this._currentValue.toLocaleString()}`;
         }
+        this._syncSupplementalStats();
     }
 
     /**
@@ -231,6 +252,13 @@ export default class GameEnvScore {
     _extractGameName() {
         if (this.gameEnv.game && this.gameEnv.game.gameName) {
             return this.gameEnv.game.gameName;
+        }
+        if (this.gameEnv.game && this.gameEnv.game.environment && this.gameEnv.game.environment.gameName) {
+            return this.gameEnv.game.environment.gameName;
+        }
+        const currentLevelName = this.gameEnv.gameControl?.currentLevel?.constructor?.name;
+        if (currentLevelName) {
+            return currentLevelName;
         }
         if (typeof window === 'undefined') return 'unknown';
         const pathname = window.location.pathname;

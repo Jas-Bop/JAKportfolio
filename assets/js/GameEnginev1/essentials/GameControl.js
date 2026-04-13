@@ -207,6 +207,11 @@ class GameControl {
             } else {
                 window.alert('Incorrect password. Level skip cancelled.');
             }
+        } else if (event.key === '9') {
+            event.preventDefault();
+            if (this.currentLevel) {
+                this.currentLevel.continue = false;
+            }
         }
     }
     
