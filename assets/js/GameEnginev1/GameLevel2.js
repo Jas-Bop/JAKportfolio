@@ -18,7 +18,6 @@ const baseHeight = 400;
 const scaleX = width / baseWidth;
 const scaleY = height / baseHeight;
 
-// ── Track interval and images so we can clean them up on destroy ──────────
 this._mineInterval = null;
 this._mineImages = [];
 
@@ -42,7 +41,7 @@ x:x*scaleX,
 y:y*scaleY,
 width:w*scaleX,
 height:h*scaleY,
-visible:false, // barrier itself is invisible; we draw an img overlay instead
+visible:false,
 isMine:true,
 hitbox:{widthPercentage:1,heightPercentage:1},
 fromOverlay:true
@@ -97,7 +96,6 @@ reaction:function(){ if(this.dialogueSystem){ this.showReactionDialogue(); } },
 interact:function(){ if(this.dialogueSystem){ this.showRandomDialogue(); } }
 };
 
-// ── Original barriers ─────────────────────────────────────────────────────
 const dbarrier_1  = makeBarrier('dbarrier_1',207,103,10,170);
 const dbarrier_2  = makeBarrier('dbarrier_2',3,1,619,5);
 const dbarrier_3  = makeBarrier('dbarrier_3',218,104,142,5);
@@ -116,24 +114,18 @@ const dbarrier_15 = makeBarrier('dbarrier_15',4,102,112,10);
 const dbarrier_16 = makeBarrier('dbarrier_16',115,8,23,108);
 const dbarrier_17 = makeBarrier('dbarrier_17',227,9,12,11);
 const dbarrier_18 = makeBarrier('dbarrier_18',356,50,7,20);
+const dbarrier_19 = makeBarrier('dbarrier_19',540,342,90,36);
 
-// ── Mines — inside maze boundary only (x:10-610, y:10-310) ─────────────
-// Mid-left open (x:10-80, y:115-210)
 const mine_6  = makeMine('mine_6',  30,150,15,15);
 const mine_7  = makeMine('mine_7',  60,180,15,15);
-// Mid-center open (x:270-370, y:115-265)
 const mine_8  = makeMine('mine_8', 300,150,15,15);
 const mine_9  = makeMine('mine_9', 330,220,15,15);
-// Right-center open (x:385-475, y:190-245)
 const mine_10 = makeMine('mine_10',420,210,15,15);
-// Far-right open (x:490-610, y:190-305)
 const mine_11 = makeMine('mine_11',520,220,15,15);
 const mine_12 = makeMine('mine_12',570,260,15,15);
-// Bottom strip (x:10-370, y:280-310)
 const mine_13 = makeMine('mine_13', 50,290,15,15);
 const mine_14 = makeMine('mine_14',150,290,15,15);
 const mine_15 = makeMine('mine_15',290,290,15,15);
-// Bottom-right (x:385-610, y:320-390) — reachable via right corridor
 const mine_16 = makeMine('mine_16',430,330,15,15);
 const mine_17 = makeMine('mine_17',500,330,15,15);
 const mine_18 = makeMine('mine_18',560,330,15,15);
@@ -172,6 +164,7 @@ this.classes = [
 { class: Barrier, data: dbarrier_16 },
 { class: Barrier, data: dbarrier_17 },
 { class: Barrier, data: dbarrier_18 },
+{ class: Barrier, data: dbarrier_19 },
 
 { class: Barrier, data: mine_6 },
 { class: Barrier, data: mine_7 },
@@ -191,52 +184,67 @@ this.classes = [
 { class: Npc, data: npcData }
 ];
 
-// ── initialize() — attach mine sprite images over each mine Barrier ───────
 this.initialize = () => {
   if (!gameEnv.stats) gameEnv.stats = {};
   if (typeof gameEnv.stats.coinsCollected !== 'number') {
     gameEnv.stats.coinsCollected = 0;
   }
 
+  // Leaderboard setup (uses Leaderboard if available, falls back to simple DOM)
+  this._leaderboardEl = null;
+  this._leaderboard = null;
+  const createLeaderboard = () => {
+    try {
+      if (typeof Leaderboard === 'function') {
+        this._leaderboard = new Leaderboard(gameEnv.container || document.body, { label: 'Coins' });
+        if (this._leaderboard && typeof this._leaderboard.set === 'function') {
+          this._leaderboard.set(gameEnv.stats.coinsCollected || 0);
+          return;
+        }
+      }
+    } catch (e) { /* fallback to DOM */ }
+    const el = document.createElement('div');
+    Object.assign(el.style, {
+      position: 'fixed', right: '16px', top: '16px',
+      backgroundColor: 'rgba(0,0,0,0.7)', color: '#FFD700',
+      padding: '8px 10px', borderRadius: '6px', zIndex: '99999',
+      fontFamily: "'Press Start 2P', monospace", fontSize: '12px'
+    });
+    el.textContent = 'Coins: ' + (gameEnv.stats.coinsCollected || 0);
+    (gameEnv.container || document.body).appendChild(el);
+    this._leaderboardEl = el;
+  };
+  const updateLeaderboard = (count) => {
+    if (this._leaderboard && typeof this._leaderboard.set === 'function') {
+      this._leaderboard.set(count);
+    } else if (this._leaderboardEl) {
+      this._leaderboardEl.textContent = 'Coins: ' + count;
+    }
+  };
+  createLeaderboard();
+
   const blockedRects = gameEnv.gameObjects
     .filter(obj => obj instanceof Barrier)
-    .map(obj => ({
-      x: obj.x,
-      y: obj.y,
-      width: obj.width,
-      height: obj.height
-    }));
+    .map(obj => ({ x: obj.x, y: obj.y, width: obj.width, height: obj.height }));
 
   const coin = gameEnv.gameObjects.find(obj => obj?.spriteData?.id === 'coin');
   if (coin) {
-    const getCoinSize = () => ({
-      width: coin.width || 40,
-      height: coin.height || 40
-    });
-
+    const getCoinSize = () => ({ width: coin.width || 40, height: coin.height || 40 });
     const overlapsBlockedArea = (x, y) => {
       const coinSize = getCoinSize();
       const padding = 8;
-      const left = x + padding;
-      const top = y + padding;
-      const right = x + coinSize.width - padding;
-      const bottom = y + coinSize.height - padding;
-
       return blockedRects.some(rect => (
-        left < rect.x + rect.width &&
-        right > rect.x &&
-        top < rect.y + rect.height &&
-        bottom > rect.y
+        x + padding < rect.x + rect.width &&
+        x + coinSize.width - padding > rect.x &&
+        y + padding < rect.y + rect.height &&
+        y + coinSize.height - padding > rect.y
       ));
     };
-
     const placeCoinSafely = () => {
       const coinSize = getCoinSize();
-      const minX = 10;
-      const minY = 10;
+      const minX = 10, minY = 10;
       const maxX = Math.max(minX, gameEnv.innerWidth - coinSize.width - 10);
       const maxY = Math.max(minY, gameEnv.innerHeight - coinSize.height - 10);
-
       for (let attempt = 0; attempt < 300; attempt++) {
         const x = Math.random() * (maxX - minX) + minX;
         const y = Math.random() * (maxY - minY) + minY;
@@ -247,28 +255,26 @@ this.initialize = () => {
           return true;
         }
       }
-
       coin.position.x = minX;
       coin.position.y = minY;
       coin.resize();
       return false;
     };
-
     const originalCollect = coin.collect.bind(coin);
     coin.randomizePosition = placeCoinSafely;
     coin.collect = function() {
       originalCollect();
+      gameEnv.stats.coinsCollected = (gameEnv.stats.coinsCollected || 0) + 1;
+      try { updateLeaderboard(gameEnv.stats.coinsCollected); } catch (e) {}
     };
     placeCoinSafely();
   }
 
   const mineSrc = path + '/images/gamebuilder/sprites/Mine.jpg';
-  this._mineImages = []; // reset in case initialize is called more than once
+  this._mineImages = [];
   for (const obj of gameEnv.gameObjects) {
     if (!obj.canvas?.id?.startsWith('mine_')) continue;
-    // Also tag the instance so detection can use it as a fallback
     obj.isMine = true;
-
     const img = document.createElement('img');
     img.src = mineSrc;
     img.style.position = 'absolute';
@@ -282,48 +288,70 @@ this.initialize = () => {
     const container = gameEnv.container || gameEnv.gameContainer;
     if (container) {
       container.appendChild(img);
-      this._mineImages.push(img); // track so we can remove on destroy
+      this._mineImages.push(img);
     }
   }
 };
 
-// ── destroy() — stop detection and remove mine images from the DOM ────────
 this.destroy = () => {
-  // Stop the mine detection interval
   if (this._mineInterval !== null) {
     clearInterval(this._mineInterval);
     this._mineInterval = null;
   }
-  // Remove all mine overlay images
-  for (const img of this._mineImages) {
-    img.remove();
+
+  // Remove leaderboard UI / instance
+  if (this._leaderboard && typeof this._leaderboard.destroy === 'function') {
+    try { this._leaderboard.destroy(); } catch(e) {}
+    this._leaderboard = null;
   }
+  if (this._leaderboardEl) {
+    try { this._leaderboardEl.remove(); } catch(e) {}
+    this._leaderboardEl = null;
+  }
+
+  for (const img of this._mineImages) img.remove();
   this._mineImages = [];
 };
 
-// ── Mine detection ────────────────────────────────────────────────────────
-this._mineInterval = setInterval(() => {
+// ── Single interval handles both mines AND dbarrier_19 message ────────────
+let _lastMsg = 0;
 
+this._mineInterval = setInterval(() => {
   const player = gameEnv.gameObjects.find(o => o instanceof Player);
   if (!player) return;
 
-  let exploded = false;
+  // Use the same position read the mine detection uses
+  const px = player.position.x + (player.width  || 0) / 2;
+  const py = player.position.y + (player.height || 0) / 2;
+
+  // ── dbarrier_19 message ──────────────────────────────────────────────
+  const bx = dbarrier_19.x;
+  const by = dbarrier_19.y;
+  const bw = dbarrier_19.width;
+  const bh = dbarrier_19.height;
+
+  if (px > bx && px < bx + bw && py > by && py < by + bh) {
+    const now = Date.now();
+    if (now - _lastMsg >= 1500) {
+      _lastMsg = now;
+      const msg = document.createElement('div');
+      Object.assign(msg.style, {
+        position: 'fixed', right: '16px', bottom: '16px',
+        backgroundColor: 'rgba(0,0,0,0.85)', color: '#fff',
+        padding: '10px 14px', borderRadius: '8px',
+        zIndex: '99998', fontFamily: "'Press Start 2P', monospace",
+        fontSize: '12px'
+      });
+      msg.textContent = 'Why are you back here?';
+      document.body.appendChild(msg);
+      setTimeout(() => { msg.remove(); }, 1500);
+    }
+  }
+
+  // ── Mine detection ───────────────────────────────────────────────────
   for (const obj of gameEnv.gameObjects) {
-    if (exploded) break;
-    // Mines have canvas ids starting with 'mine_'
     if (!(obj.canvas?.id?.startsWith('mine_'))) continue;
-
-    // Use player center for more forgiving collision
-    const px = player.position.x + (player.width  || 0) / 2;
-    const py = player.position.y + (player.height || 0) / 2;
-    const bx = obj.x;
-    const by = obj.y;
-    const bw = obj.width;
-    const bh = obj.height;
-
-    if (px > bx && px < bx + bw && py > by && py < by + bh) {
-      exploded = true;
-      // Stop the interval immediately so it doesn't fire again during reload
+    if (px > obj.x && px < obj.x + obj.width && py > obj.y && py < obj.y + obj.height) {
       clearInterval(this._mineInterval);
       this._mineInterval = null;
 
@@ -345,6 +373,7 @@ this._mineInterval = setInterval(() => {
         <div style="font-size:11px;margin-top:10px;opacity:0.8;">Restarting...</div>`;
       document.body.appendChild(boom);
       setTimeout(() => location.reload(), 1500);
+      break;
     }
   }
 

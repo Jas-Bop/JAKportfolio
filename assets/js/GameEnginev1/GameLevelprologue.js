@@ -128,7 +128,7 @@ class GameLevelprologue {
                 history: [
                     {
                         question: "What is this game?",
-                        answer: "This is a game that was made by our creators, Jasan, Krish, and Aarnav."
+                        answer: "This is a game that was made by our creators, Krish, Jasan, and Aarnav."
                     },
                     {
                         question: "Tell me about the next level",
