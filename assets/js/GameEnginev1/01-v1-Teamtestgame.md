@@ -17,12 +17,11 @@ permalink: /gamify/TestGame
     import GameLevelfinal from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelfinal.js";
     import GameLevelprologue from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevelprologue.js";
     import GameLevel2 from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevel2.js";
-    import Leaderboard from "{{site.baseurl}}/assets/js/GameEnginev1.1/essentials/Leaderboard.js";
-
+    import GameLevel3 from "{{site.baseurl}}/assets/js/GameEnginev1/GameLevel3.js";
 
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
-    const gameLevelClasses = [GameLevelprologue, GameLeveltest, GameLevel2, GameLevelfinal];
+    const gameLevelClasses = [GameLevelprologue, GameLeveltest, GameLevel2, GameLevel3, GameLevelfinal];
 
     // Web Server Environment data
     const environment = {
