@@ -167,13 +167,24 @@ class GameLevelprologue {
             zIndex: 20,
             value: 1
         };
-
+        const b_top = {
+            id: 'floor-barrier',
+            x: 0,
+            y: floorY, // start where the ground begins
+            width: width,
+            height: height - floorY, // extend all the way to bottom of screen
+            visible: true,
+            color: 'rgba(255, 0, 0, 0.3)', // keep visible for debugging
+            hitbox: { widthPercentage: 0.0, heightPercentage: 0.0 },
+            fromOverlay: true
+        };
         this.classes = [
             { class: GameEnvBackground, data: bgData },
             { class: Player, data: playerData },
             { class: Npc, data: npcData1 },
             { class: Npc, data: npcData2 },
             { class: Npc, data: npcData3 },
+            { class: Barrier, data: b_top },
             { class: Coin, data: coinData }
         ];
 
